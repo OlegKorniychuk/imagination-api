@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { Config } from './config/index.config';
 import { dotenvLoader, TypedConfigModule } from 'nest-typed-config';
 import { ImagesModule } from './images/images.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ImagesModule } from './images/images.module';
       load: dotenvLoader(),
     }),
     ImagesModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService],
