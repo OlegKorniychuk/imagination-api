@@ -4,7 +4,7 @@ import { UpdateImageDto } from './dto/update-image.dto';
 import { randomBytes } from 'crypto';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { Image } from './entities/image.entity';
+import { Image, S3Image } from './entities/image.entity';
 import { images } from 'src/drizzle/schema/images.schema';
 import { eq } from 'drizzle-orm';
 import { S3Service } from 'src/s3/s3.service';
@@ -16,18 +16,24 @@ export class ImagesService {
     private s3: S3Service,
   ) {}
 
-  async create(createImageDto: CreateImageDto, image: Express.Multer.File) {
+  async create(
+    createImageDto: CreateImageDto,
+    image: Express.Multer.File,
+  ): Promise<Image> {
     const uniqueName: string = randomBytes(32).toString('hex');
     await this.s3.uploadImage(image, uniqueName);
-    await this.db.insert(images).values({ ...createImageDto, uniqueName });
+    const [newImage] = await this.db
+      .insert(images)
+      .values({ ...createImageDto, uniqueName })
+      .returning();
 
-    return 'A new image was added';
+    return newImage;
   }
 
-  async findAll() {
+  async findAll(): Promise<S3Image[]> {
     const allImages: Image[] = await this.db.select().from(images);
 
-    const imagesWithUrls: (Image & { url: string })[] = await Promise.all(
+    const imagesWithUrls: S3Image[] = await Promise.all(
       allImages.map(async (image) => {
         const url: string = await this.s3.getImageUrl(image.uniqueName, 3600);
 
@@ -38,7 +44,7 @@ export class ImagesService {
     return imagesWithUrls;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<S3Image> {
     const [image] = await this.db
       .select()
       .from(images)
@@ -49,8 +55,8 @@ export class ImagesService {
     return { ...image, url };
   }
 
-  async update(id: string, updateImageDto: UpdateImageDto) {
-    const updatedImage = await this.db
+  async update(id: string, updateImageDto: UpdateImageDto): Promise<Image> {
+    const [updatedImage] = await this.db
       .update(images)
       .set(updateImageDto)
       .where(eq(images.id, id))
@@ -59,7 +65,7 @@ export class ImagesService {
     return updatedImage;
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<Image> {
     const [deletedImage] = await this.db
       .delete(images)
       .where(eq(images.id, id))
