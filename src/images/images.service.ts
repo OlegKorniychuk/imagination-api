@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { randomBytes } from 'crypto';
@@ -50,6 +50,8 @@ export class ImagesService {
       .from(images)
       .where(eq(images.id, id));
 
+    if (!image) throw new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST);
+
     const url: string = await this.s3.getImageUrl(image.uniqueName, 3600);
 
     return { ...image, url };
@@ -62,6 +64,9 @@ export class ImagesService {
       .where(eq(images.id, id))
       .returning();
 
+    if (!updatedImage)
+      throw new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST);
+
     return updatedImage;
   }
 
@@ -70,6 +75,9 @@ export class ImagesService {
       .delete(images)
       .where(eq(images.id, id))
       .returning();
+
+    if (!deletedImage)
+      throw new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST);
 
     await this.s3.deleteImage(deletedImage.uniqueName);
 
