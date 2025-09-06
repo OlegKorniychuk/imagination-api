@@ -8,6 +8,9 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { UpdateImageDto } from './dto/update-image.dto';
@@ -22,7 +25,15 @@ export class ImagesController {
   @UseInterceptors(FileInterceptor('image'))
   create(
     @Body() createImageDto: CreateImageDto,
-    @UploadedFile() image: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
+          new MaxFileSizeValidator({ maxSize: 500 * 1024 }),
+        ],
+      }),
+    )
+    image: Express.Multer.File,
   ) {
     return this.imagesService.create(createImageDto, image);
   }
