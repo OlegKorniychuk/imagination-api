@@ -21,11 +21,21 @@ export class ImagesService {
     image: Express.Multer.File,
   ): Promise<Image> {
     const uniqueName: string = randomBytes(32).toString('hex');
-    await this.s3.uploadImage(image, uniqueName);
     const [newImage] = await this.db
       .insert(images)
       .values({ ...createImageDto, uniqueName })
       .returning();
+    try {
+      await this.s3.uploadImage(image, uniqueName);
+    } catch (err) {
+      await this.db.delete(images).where(eq(images.id, newImage.id));
+      console.error(err);
+
+      throw new HttpException(
+        'Failed to save image',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
 
     return newImage;
   }
@@ -79,7 +89,12 @@ export class ImagesService {
     if (!deletedImage)
       throw new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST);
 
-    await this.s3.deleteImage(deletedImage.uniqueName);
+    try {
+      await this.s3.deleteImage(deletedImage.uniqueName);
+    } catch (err) {
+      console.log('Failed to delete image from S3');
+      console.error(err);
+    }
 
     return deletedImage;
   }
