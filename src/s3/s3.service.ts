@@ -13,17 +13,10 @@ import { Config } from 'config/index.config';
 
 @Injectable()
 export class S3Service {
-  private client: S3Client;
-
-  constructor(private config: Config) {
-    this.client = new S3Client({
-      region: config.S3_BUCKET_REGION,
-      credentials: {
-        accessKeyId: config.S3_BUCKET_KEY,
-        secretAccessKey: config.S3_BUCKET_SECRET,
-      },
-    });
-  }
+  constructor(
+    private config: Config,
+    private client: S3Client,
+  ) {}
 
   async uploadImage(image: Express.Multer.File, uniqueName: string) {
     const params: PutObjectCommandInput = {
