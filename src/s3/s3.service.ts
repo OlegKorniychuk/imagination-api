@@ -9,7 +9,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
-import { Config } from 'src/config/index.config';
+import { Config } from 'config/index.config';
 
 @Injectable()
 export class S3Service {

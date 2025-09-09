@@ -2,12 +2,12 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { randomBytes } from 'crypto';
-import { DrizzleDB } from 'src/drizzle/types/drizzle';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DrizzleDB } from 'drizzle/types/drizzle';
+import { DRIZZLE } from 'drizzle/drizzle.module';
 import { Image, S3Image } from './entities/image.entity';
-import { images } from 'src/drizzle/schema/images.schema';
+import { images } from 'drizzle/schema/images.schema';
 import { eq } from 'drizzle-orm';
-import { S3Service } from 'src/s3/s3.service';
+import { S3Service } from 's3/s3.service';
 
 @Injectable()
 export class ImagesService {
