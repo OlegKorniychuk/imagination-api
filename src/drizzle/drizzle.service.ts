@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Config } from 'config/index.config';
+import { Config } from 'src/config/index.config';
 
 @Injectable()
 export class DrizzleService {
