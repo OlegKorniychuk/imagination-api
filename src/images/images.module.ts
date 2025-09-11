@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { ImagesController } from './images.controller';
-import { DrizzleModule } from 'src/drizzle/drizzle.module';
-import { S3Module } from 'src/s3/s3.module';
+import { DrizzleModule } from 'drizzle/drizzle.module';
+import { S3Module } from 's3/s3.module';
 
 @Module({
   controllers: [ImagesController],
