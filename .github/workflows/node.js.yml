@@ -11,7 +11,7 @@ on:
     branches: ['main']
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -35,12 +35,11 @@ jobs:
       - name: Build project
         run: npm run build --if-present
 
-  test:
-    - name: Lint code
-      run: npm run lint --if-present
+      - name: Lint code
+        run: npm run lint --if-present
 
-    - name: Check formatting
-      run: npm run format --if-present
+      - name: Check formatting
+        run: npm run format --if-present
 
-    - name: Run test
-      run: npm test
+      - name: Run test
+        run: npm test
