@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { S3Service } from './s3.service';
-import { Config } from 'config/index.config';
+import { Config } from 'src/config/index.config';
 import {
   DeleteObjectCommand,
   GetObjectCommand,

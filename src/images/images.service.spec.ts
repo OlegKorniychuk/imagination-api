@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImagesService } from './images.service';
-import { S3Service } from 's3/s3.service';
-import { DRIZZLE } from 'drizzle/drizzle.module';
+import { S3Service } from 'src/s3/s3.service';
+import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { CreateImageDto } from './dto/create-image.dto';
 import { Image } from './entities/image.entity';
-import { images } from 'drizzle/schema/images.schema';
+import { images } from 'src/drizzle/schema/images.schema';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { UpdateImageDto } from './dto/update-image.dto';
+import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
 
 const mockImage: Image = {
   id: 'a-valid-uuid',
@@ -26,18 +27,6 @@ const mockS3Service = {
   getImageUrl: jest.fn(),
   deleteImage: jest.fn(),
 };
-
-class MockDrizzleDB {
-  insert = jest.fn().mockReturnThis();
-  values = jest.fn().mockReturnThis();
-  select = jest.fn().mockReturnThis();
-  from = jest.fn().mockReturnThis();
-  update = jest.fn().mockReturnThis();
-  set = jest.fn().mockReturnThis();
-  delete = jest.fn().mockReturnThis();
-  where = jest.fn().mockReturnThis();
-  returning = jest.fn();
-}
 
 describe('ImagesService', () => {
   let service: ImagesService;
