@@ -16,10 +16,6 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "config/*": ["config/*"],
-      "src/*": ["*"]
-    }
+    "noFallthroughCasesInSwitch": true
   }
 }
