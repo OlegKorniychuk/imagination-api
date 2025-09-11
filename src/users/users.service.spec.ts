@@ -1,12 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
+import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
+import { DRIZZLE } from 'src/drizzle/drizzle.module';
 
 describe('UsersService', () => {
   let service: UsersService;
+  let mockDrizzleDB: MockDrizzleDB;
 
   beforeEach(async () => {
+    mockDrizzleDB = new MockDrizzleDB();
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UsersService],
+      providers: [UsersService, { provide: DRIZZLE, useValue: mockDrizzleDB }],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
