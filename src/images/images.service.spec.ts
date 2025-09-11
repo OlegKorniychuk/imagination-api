@@ -78,7 +78,6 @@ describe('ImagesService', () => {
 
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
       mockS3Service.uploadImage.mockResolvedValue(undefined);
-      // mockDrizzleDB.returning.mockResolvedValueOnce([mockImage]);
 
       const result = await service.create(createImageDto, imageFile);
 
