@@ -7,6 +7,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { MockConfig } from 'test/mocks/config.mock';
 
 jest.mock('@aws-sdk/s3-request-presigner', () => ({
   getSignedUrl: jest.fn(),
@@ -16,14 +17,7 @@ describe('S3 Service', () => {
   let service: S3Service;
   const mockSend = jest.fn();
 
-  const mockConfig: Config = {
-    DATABASE_URL: 'postgres://test',
-    PORT: '3500',
-    S3_BUCKET_NAME: 'test-bucket',
-    S3_BUCKET_REGION: 'us-east-1',
-    S3_BUCKET_KEY: 'test-key',
-    S3_BUCKET_SECRET: 'test-secret',
-  };
+  const mockConfig: Config = new MockConfig();
 
   const mockS3Client = { send: mockSend } as unknown as S3Client;
 
