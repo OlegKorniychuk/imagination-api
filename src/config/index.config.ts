@@ -1,4 +1,4 @@
-import { IsNumberString, IsString } from 'class-validator';
+import { IsNumberString, IsString, Length, Matches } from 'class-validator';
 
 export class Config {
   @IsString()
@@ -18,4 +18,15 @@ export class Config {
 
   @IsString()
   S3_BUCKET_SECRET: string;
+
+  @IsString()
+  @Length(32, 32)
+  ACCESS_TOKEN_SECRET: string;
+
+  @IsString()
+  @Matches(/^\d+\s?(ms|s|m|h|d|w|y)$/, {
+    message:
+      'Should be formatted like 12h (see ms package documentation for details)',
+  })
+  ACCESS_TOKEN_EXPIRES_IN: string;
 }
