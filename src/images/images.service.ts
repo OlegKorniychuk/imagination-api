@@ -6,8 +6,9 @@ import { DrizzleDB } from 'src/drizzle/types/drizzle';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { Image, S3Image } from './entities/image.entity';
 import { images } from 'src/drizzle/schema/images.schema';
-import { eq } from 'drizzle-orm';
+import { eq, ilike, and, SQL, asc, desc, arrayOverlaps } from 'drizzle-orm';
 import { S3Service } from 'src/s3/s3.service';
+import { ImageSearchOptionsDto } from './dto/image-query-params.dto';
 
 @Injectable()
 export class ImagesService {
@@ -39,11 +40,78 @@ export class ImagesService {
     return newImage;
   }
 
-  async findAll(): Promise<S3Image[]> {
-    const allImages: Image[] = await this.db.select().from(images);
+  async findMany(options: ImageSearchOptionsDto = {}): Promise<S3Image[]> {
+    const { filter, sort, paginate } = options;
+
+    // Ids subquerry
+    let idSubquery = this.db.select({ id: images.id }).from(images).$dynamic();
+
+    // Filters
+    if (filter) {
+      const conditions: SQL<unknown>[] = [];
+
+      if (filter.title) {
+        conditions.push(ilike(images.title, `%${filter.title}%`));
+      }
+
+      // Looks for images that have ANY of provided tags
+      if (filter.tags && filter.tags.length > 0) {
+        conditions.push(arrayOverlaps(images.tags, filter.tags));
+      }
+
+      if (conditions.length > 0) {
+        idSubquery = idSubquery.where(and(...conditions));
+      }
+    }
+
+    // Sorting
+
+    if (sort) {
+      const { field, order } = sort;
+      const column = images[field];
+
+      if (column) {
+        idSubquery = idSubquery.orderBy(
+          order === 'asc' ? asc(column) : desc(column),
+          order === 'asc' ? asc(images.id) : desc(images.id),
+        );
+      }
+    }
+
+    if (paginate) {
+      idSubquery = idSubquery
+        .limit(paginate.pageSize)
+        .offset((paginate.page - 1) * paginate.pageSize);
+    }
+
+    // All this weird shit is needed to implement deferred join - a pagination optimization technique
+    // First we find only ids of needed rows, then join them with the table
+    // and reapply sorting, since order will be lost after inner join
+    const sq = idSubquery.as('subquery');
+    const finalQuery = this.db
+      .select()
+      .from(images)
+      .innerJoin(sq, eq(images.id, sq.id));
+
+    if (sort) {
+      const { field, order } = sort;
+      const column = images[field];
+      if (column) {
+        finalQuery.orderBy(
+          order === 'asc' ? asc(column) : desc(column),
+          order === 'asc' ? asc(images.id) : desc(images.id),
+        );
+      }
+    }
+
+    const filteredImages: Image[] = await finalQuery.then((rows) =>
+      rows.map((row) => row.images),
+    );
+
+    // const filteredImages: Image[] = await query;
 
     const imagesWithUrls: S3Image[] = await Promise.all(
-      allImages.map(async (image) => {
+      filteredImages.map(async (image) => {
         const url: string = await this.s3.getImageUrl(image.uniqueName, 3600);
 
         return { ...image, url };
