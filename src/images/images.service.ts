@@ -8,7 +8,7 @@ import { Image, S3Image } from './entities/image.entity';
 import { images } from 'src/drizzle/schema/images.schema';
 import { eq, ilike, and, SQL, asc, desc, arrayOverlaps } from 'drizzle-orm';
 import { S3Service } from 'src/s3/s3.service';
-import { ImageSearchOptionsDto } from './dto/image-query-params.dto';
+import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 
 @Injectable()
 export class ImagesService {
@@ -40,7 +40,10 @@ export class ImagesService {
     return newImage;
   }
 
-  async findMany(options: ImageSearchOptionsDto = {}): Promise<S3Image[]> {
+  async findMany(
+    options: ImageSearchOptionsDto = {},
+    authorId?: string,
+  ): Promise<S3Image[]> {
     const { filter, sort, paginate } = options;
 
     // Ids subquerry
@@ -63,6 +66,8 @@ export class ImagesService {
         idSubquery = idSubquery.where(and(...conditions));
       }
     }
+
+    if (authorId) idSubquery = idSubquery.where(eq(images.authorId, authorId));
 
     // Sorting
 

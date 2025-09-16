@@ -17,7 +17,7 @@ import { ImagesService } from './images.service';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateImageDto } from './dto/create-image.dto';
-import { ImageSearchOptionsDto } from './dto/image-query-params.dto';
+import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 
 @Controller('images')
 export class ImagesController {
