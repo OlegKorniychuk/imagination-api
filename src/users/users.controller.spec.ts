@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { ImagesService } from 'src/images/images.service';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -13,7 +14,11 @@ describe('UsersController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [UsersService, { provide: DRIZZLE, useValue: mockDrizzleDB }],
+      providers: [
+        UsersService,
+        { provide: DRIZZLE, useValue: mockDrizzleDB },
+        { provide: ImagesService, useValue: {} },
+      ],
     }).compile();
 
     controller = module.get<UsersController>(UsersController);
