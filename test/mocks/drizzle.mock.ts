@@ -7,5 +7,8 @@ export class MockDrizzleDB {
   set = jest.fn().mockReturnThis();
   delete = jest.fn().mockReturnThis();
   where = jest.fn().mockReturnThis();
+  innerJoin = jest.fn().mockReturnThis();
+  $dynamic = jest.fn().mockReturnThis();
+  as = jest.fn().mockReturnThis();
   returning = jest.fn();
 }
