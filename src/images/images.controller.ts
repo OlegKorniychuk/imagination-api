@@ -42,7 +42,6 @@ export class ImagesController {
 
   @Get()
   findAll(@Query() query: ImageSearchOptionsDto) {
-    console.log(query);
     return this.imagesService.findMany(query);
   }
 
