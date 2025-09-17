@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImagesService } from './images.service';
-import { S3Service } from 'src/s3/s3.service';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { CreateImageDto } from './dto/create-image.dto';
 import { Image } from './entities/image.entity';
@@ -19,12 +18,6 @@ const mockImage: Image = {
   updatedAt: new Date(),
 };
 
-const mockS3Service = {
-  uploadImage: jest.fn(),
-  getImageUrl: jest.fn(),
-  deleteImage: jest.fn(),
-};
-
 describe('ImagesService', () => {
   let service: ImagesService;
   let mockDrizzleDB: MockDrizzleDB;
@@ -35,10 +28,6 @@ describe('ImagesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ImagesService,
-        {
-          provide: S3Service,
-          useValue: mockS3Service,
-        },
         {
           provide: DRIZZLE,
           useValue: mockDrizzleDB,
