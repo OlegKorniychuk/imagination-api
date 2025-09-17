@@ -9,6 +9,8 @@ import {
   Query,
   NotFoundException,
   SerializeOptions,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -83,12 +85,12 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @SerializeOptions({ type: UserResponseDto })
-  async remove(@Param('id') id: string): Promise<UserResponseDto> {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string): Promise<void> {
     const deletedUser = await this.usersService.remove(id);
 
     if (!deletedUser) throw new NotFoundException();
 
-    return deletedUser;
+    return;
   }
 }
