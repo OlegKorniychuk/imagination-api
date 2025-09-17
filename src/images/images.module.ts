@@ -8,5 +8,6 @@ import { S3Module } from 'src/s3/s3.module';
   controllers: [ImagesController],
   providers: [ImagesService],
   imports: [DrizzleModule, S3Module],
+  exports: [ImagesService],
 })
 export class ImagesModule {}

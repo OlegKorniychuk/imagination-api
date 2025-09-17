@@ -6,22 +6,11 @@ import { UpdateImageDto } from './dto/update-image.dto';
 
 class MockImagesService {
   create = jest.fn();
-  findAll = jest.fn();
+  findMany = jest.fn();
   findOne = jest.fn();
   update = jest.fn();
   remove = jest.fn();
 }
-
-// const mockImage: Image = {
-//   id: 'a-valid-uuid',
-//   authorId: 'a-valid-uuid',
-//   uniqueName: 'a-unique-name',
-//   title: 'A beautiful sunset',
-//   description: null,
-//   tags: [],
-//   createdAt: new Date(),
-//   updatedAt: new Date(),
-// };
 
 describe('ImagesController', () => {
   let controller: ImagesController;
@@ -64,11 +53,11 @@ describe('ImagesController', () => {
   describe('findAll', () => {
     it('should return all images', async () => {
       const images = [{ id: '1', title: 'img1' }];
-      mockImagesService.findAll.mockResolvedValue(images);
+      mockImagesService.findMany.mockResolvedValue(images);
 
-      const response = await controller.findAll();
+      const response = await controller.findAll({});
 
-      expect(mockImagesService.findAll).toHaveBeenCalled();
+      expect(mockImagesService.findMany).toHaveBeenCalled();
       expect(response).toEqual(images);
     });
   });

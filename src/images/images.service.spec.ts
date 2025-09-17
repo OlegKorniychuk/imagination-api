@@ -106,10 +106,13 @@ describe('ImagesService', () => {
 
   describe('findAll', () => {
     it('should return all images with signed urls', async () => {
-      mockDrizzleDB.from.mockResolvedValue([mockImage, mockImage]);
+      mockDrizzleDB.innerJoin.mockResolvedValue([
+        { images: mockImage },
+        { images: mockImage },
+      ]);
       mockS3Service.getImageUrl.mockResolvedValue(mockS3ImageUrl);
 
-      const result = await service.findAll();
+      const result = await service.findMany();
 
       expect(mockDrizzleDB.select).toHaveBeenCalled();
       expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
