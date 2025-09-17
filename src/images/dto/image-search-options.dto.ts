@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
@@ -48,16 +49,19 @@ export class ImagePaginateOptionsDto {
 }
 
 export class ImageSearchOptionsDto {
+  @ApiProperty()
   @IsOptional()
   @ValidateNested()
   @Type(() => ImageSortOptionsDto)
   sort?: ImageSortOptionsDto;
 
+  @ApiProperty()
   @IsOptional()
   @ValidateNested()
   @Type(() => ImageFilterOptionsDto)
   filter?: ImageFilterOptionsDto;
 
+  @ApiProperty()
   @IsOptional()
   @ValidateNested()
   @Type(() => ImagePaginateOptionsDto)

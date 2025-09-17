@@ -24,6 +24,7 @@ import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { randomBytes } from 'crypto';
 import { Image, S3Image } from './entities/image.entity';
+import { ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 
 @Controller('images')
 export class ImagesController {
@@ -33,6 +34,25 @@ export class ImagesController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Upload a new image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+        title: { type: 'string' },
+        description: { type: 'string' },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createImageDto: CreateImageDto,
