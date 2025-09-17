@@ -1,41 +1,25 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
-import { randomBytes } from 'crypto';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
 import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { Image, S3Image } from './entities/image.entity';
+import { Image } from './entities/image.entity';
 import { images } from 'src/drizzle/schema/images.schema';
 import { eq, ilike, and, SQL, asc, desc, arrayOverlaps } from 'drizzle-orm';
-import { S3Service } from 'src/s3/s3.service';
 import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 
 @Injectable()
 export class ImagesService {
-  constructor(
-    @Inject(DRIZZLE) private db: DrizzleDB,
-    private s3: S3Service,
-  ) {}
+  constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
   async create(
     createImageDto: CreateImageDto,
-    image: Express.Multer.File,
+    uniqueName: string,
   ): Promise<Image> {
-    const uniqueName: string = randomBytes(32).toString('hex');
     const [newImage] = await this.db
       .insert(images)
       .values({ ...createImageDto, uniqueName })
       .returning();
-    try {
-      await this.s3.uploadImage(image, uniqueName);
-    } catch {
-      await this.db.delete(images).where(eq(images.id, newImage.id));
-
-      throw new HttpException(
-        'Failed to save image',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
 
     return newImage;
   }
@@ -43,7 +27,7 @@ export class ImagesService {
   async findMany(
     options: ImageSearchOptionsDto = {},
     authorId?: string,
-  ): Promise<S3Image[]> {
+  ): Promise<Image[]> {
     const { filter, sort, paginate } = options;
 
     // Ids subquerry
@@ -109,64 +93,36 @@ export class ImagesService {
       }
     }
 
-    const filteredImages: Image[] = await finalQuery.then((rows) =>
-      rows.map((row) => row.images),
-    );
-
-    // const filteredImages: Image[] = await query;
-
-    const imagesWithUrls: S3Image[] = await Promise.all(
-      filteredImages.map(async (image) => {
-        const url: string = await this.s3.getImageUrl(image.uniqueName, 3600);
-
-        return { ...image, url };
-      }),
-    );
-
-    return imagesWithUrls;
+    return await finalQuery.then((rows) => rows.map((row) => row.images));
   }
 
-  async findOne(id: string): Promise<S3Image> {
+  async findOne(id: string): Promise<Image | undefined> {
     const [image] = await this.db
       .select()
       .from(images)
       .where(eq(images.id, id));
 
-    if (!image) throw new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST);
-
-    const url: string = await this.s3.getImageUrl(image.uniqueName, 3600);
-
-    return { ...image, url };
+    return image;
   }
 
-  async update(id: string, updateImageDto: UpdateImageDto): Promise<Image> {
+  async update(
+    id: string,
+    updateImageDto: UpdateImageDto,
+  ): Promise<Image | undefined> {
     const [updatedImage] = await this.db
       .update(images)
       .set(updateImageDto)
       .where(eq(images.id, id))
       .returning();
 
-    if (!updatedImage)
-      throw new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST);
-
     return updatedImage;
   }
 
-  async remove(id: string): Promise<Image> {
+  async remove(id: string): Promise<Image | undefined> {
     const [deletedImage] = await this.db
       .delete(images)
       .where(eq(images.id, id))
       .returning();
-
-    if (!deletedImage)
-      throw new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST);
-
-    try {
-      await this.s3.deleteImage(deletedImage.uniqueName);
-    } catch (err) {
-      console.log('Failed to delete image from S3');
-      console.error(err);
-    }
 
     return deletedImage;
   }

@@ -11,7 +11,7 @@ import { User } from './entities/user.entity';
 export class UsersService {
   constructor(@Inject(DRIZZLE) private db: DrizzleDB) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User | undefined> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const [result] = await this.db
       .insert(users)
       .values(createUserDto)
