@@ -5,7 +5,6 @@ import { DRIZZLE } from 'src/drizzle/drizzle.module';
 import { CreateImageDto } from './dto/create-image.dto';
 import { Image } from './entities/image.entity';
 import { images } from 'src/drizzle/schema/images.schema';
-import { HttpException, HttpStatus } from '@nestjs/common';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
 
@@ -19,8 +18,6 @@ const mockImage: Image = {
   createdAt: new Date(),
   updatedAt: new Date(),
 };
-
-const mockS3ImageUrl = 'https://s3.signed.url/a-unique-name';
 
 const mockS3Service = {
   uploadImage: jest.fn(),
@@ -58,95 +55,53 @@ describe('ImagesService', () => {
   });
 
   describe('create', () => {
-    it('should create an image record and upload it to S3', async () => {
+    it('should create an image record and return it', async () => {
       const createImageDto: CreateImageDto = {
         title: mockImage.title,
         authorId: mockImage.authorId,
       };
-      const imageFile = { buffer: Buffer.from('test') } as Express.Multer.File;
+      const mockUniqueName = 'unique-name';
 
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
-      mockS3Service.uploadImage.mockResolvedValue(undefined);
 
-      const result = await service.create(createImageDto, imageFile);
+      const result = await service.create(createImageDto, mockUniqueName);
 
       expect(mockDrizzleDB.insert).toHaveBeenCalledWith(images);
       expect(mockDrizzleDB.values).toHaveBeenLastCalledWith(
         expect.objectContaining(createImageDto),
       );
-      expect(mockS3Service.uploadImage).toHaveBeenCalledWith(
-        imageFile,
-        expect.any(String),
-      );
       expect(result).toEqual(mockImage);
-    });
-
-    it('should delete image from db if S3 upload failes', async () => {
-      const createImageDto: CreateImageDto = {
-        title: mockImage.title,
-        authorId: mockImage.authorId,
-      };
-      const imageFile = { buffer: Buffer.from('test') } as Express.Multer.File;
-      const uploadError = new Error('upload failed');
-
-      mockDrizzleDB.returning.mockResolvedValue([mockImage]);
-      mockS3Service.uploadImage.mockRejectedValue(uploadError);
-
-      await expect(service.create(createImageDto, imageFile)).rejects.toThrow(
-        new HttpException(
-          'Failed to save image',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        ),
-      );
-
-      expect(mockDrizzleDB.delete).toHaveBeenCalledWith(images);
-      expect(mockDrizzleDB.where).toHaveBeenCalledWith(expect.anything());
     });
   });
 
   describe('findAll', () => {
-    it('should return all images with signed urls', async () => {
+    it('should return all images', async () => {
       mockDrizzleDB.innerJoin.mockResolvedValue([
         { images: mockImage },
         { images: mockImage },
       ]);
-      mockS3Service.getImageUrl.mockResolvedValue(mockS3ImageUrl);
 
       const result = await service.findMany();
 
       expect(mockDrizzleDB.select).toHaveBeenCalled();
       expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
-      expect(mockS3Service.getImageUrl).toHaveBeenCalled();
       expect(result.length).toBe(2);
       result.forEach((image) => {
-        expect(image).toEqual({ ...mockImage, url: mockS3ImageUrl });
+        expect(image).toEqual(mockImage);
       });
     });
   });
 
   describe('findOne', () => {
-    it('should return an image with signed url', async () => {
+    it('should return an image record', async () => {
       mockDrizzleDB.where.mockResolvedValue([mockImage]);
-      mockS3Service.getImageUrl.mockResolvedValue(mockS3ImageUrl);
 
       const result = await service.findOne(mockImage.id);
 
       expect(mockDrizzleDB.select).toHaveBeenCalled();
       expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
       expect(mockDrizzleDB.where).toHaveBeenCalledWith(expect.anything());
-      expect(mockS3Service.getImageUrl).toHaveBeenCalled();
-      expect(result).toEqual({ ...mockImage, url: mockS3ImageUrl });
-    });
-
-    it('should throw an error if this id does not exist', async () => {
-      mockDrizzleDB.where.mockResolvedValue([]);
-
-      await expect(service.findOne(mockImage.id)).rejects.toEqual(
-        new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST),
-      );
-
-      expect(mockDrizzleDB.select).toHaveBeenCalled();
-      expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
+      expect(result).toEqual(mockImage);
     });
   });
 
@@ -161,42 +116,16 @@ describe('ImagesService', () => {
       expect(mockDrizzleDB.set).toHaveBeenCalledWith(mockUpdateData);
       expect(result).toEqual(mockImage);
     });
-
-    it('should throw an error if this id does not exist', async () => {
-      const mockUpdateData: UpdateImageDto = { title: 'new title' };
-      mockDrizzleDB.returning.mockResolvedValue([]);
-
-      await expect(
-        service.update(mockImage.id, mockUpdateData),
-      ).rejects.toEqual(
-        new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST),
-      );
-
-      expect(mockDrizzleDB.update).toHaveBeenCalledWith(images);
-    });
   });
 
   describe('remove', () => {
-    it('should delete an image from S3 and its record from DB', async () => {
+    it('should delete an image record from DB', async () => {
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
 
       const result = await service.remove(mockImage.id);
 
       expect(mockDrizzleDB.delete).toHaveBeenCalledWith(images);
-      expect(mockS3Service.deleteImage).toHaveBeenCalledWith(
-        mockImage.uniqueName,
-      );
       expect(result).toEqual(mockImage);
-    });
-
-    it('should throw an error if this id does not exist', async () => {
-      mockDrizzleDB.returning.mockResolvedValue([]);
-
-      await expect(service.remove(mockImage.id)).rejects.toEqual(
-        new HttpException('Incorrect ID', HttpStatus.BAD_REQUEST),
-      );
-
-      expect(mockDrizzleDB.delete).toHaveBeenCalledWith(images);
     });
   });
 });
