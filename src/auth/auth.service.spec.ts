@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { User } from 'src/users/entities/user.entity';
-import { SafeUser } from 'src/users/entities/safe-user.entity';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
@@ -13,14 +12,6 @@ const mockUser: User = {
   username: 'testUser',
   email: 'test@example.com',
   password: 'hashedPassword123',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-};
-
-const mockSafeUser: SafeUser = {
-  id: 'user-uuid-123',
-  username: 'testUser',
-  email: 'test@example.com',
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -57,7 +48,7 @@ describe('AuthService', () => {
   });
 
   describe('validateUser', () => {
-    it('should return a safe user when credentials are valid', async () => {
+    it('should return a user when credentials are valid', async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       (compare as jest.Mock).mockResolvedValue(true);
 
@@ -70,8 +61,7 @@ describe('AuthService', () => {
         'test@example.com',
       );
       expect(compare).toHaveBeenCalledWith('password123', mockUser.password);
-      expect(result).toEqual(mockSafeUser);
-      expect(result).not.toHaveProperty('password');
+      expect(result).toEqual(mockUser);
     });
 
     it('should return null if the user is not found', async () => {
@@ -104,11 +94,11 @@ describe('AuthService', () => {
     it('should sign a payload and return an access token object', () => {
       mockJwtService.sign.mockReturnValue(mockAccessToken);
       const expectedPayload = {
-        email: mockSafeUser.email,
-        sub: mockSafeUser.id,
+        email: mockUser.email,
+        sub: mockUser.id,
       };
 
-      const result = service.login(mockSafeUser);
+      const result = service.login(mockUser);
 
       expect(mockJwtService.sign).toHaveBeenCalledWith(expectedPayload);
       expect(result).toEqual({ access_token: mockAccessToken });

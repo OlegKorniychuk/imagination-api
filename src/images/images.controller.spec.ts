@@ -180,7 +180,7 @@ describe('ImagesController', () => {
       expect(mockS3Service.deleteImage).toHaveBeenCalledWith(
         mockImage.uniqueName,
       );
-      expect(result).toEqual(mockImage);
+      expect(result).toBeUndefined();
     });
 
     it('should throw NotFoundException if image to delete is not found', async () => {
@@ -192,14 +192,14 @@ describe('ImagesController', () => {
       expect(mockS3Service.deleteImage).not.toHaveBeenCalled();
     });
 
-    it('should return the deleted image record even if S3 delete fails', async () => {
+    it('should return even if S3 delete fails', async () => {
       const s3Error = new Error('S3 delete failed');
       mockImagesService.remove.mockResolvedValue(mockImage);
       mockS3Service.deleteImage.mockRejectedValue(s3Error);
 
       const result = await controller.remove(mockImage.id);
 
-      expect(result).toEqual(mockImage);
+      expect(result).toBeUndefined();
       expect(mockS3Service.deleteImage).toHaveBeenCalledWith(
         mockImage.uniqueName,
       );

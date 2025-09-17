@@ -15,6 +15,8 @@ import {
   HttpException,
   HttpStatus,
   NotFoundException,
+  HttpCode,
+  SerializeOptions,
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { UpdateImageDto } from './dto/update-image.dto';
@@ -25,6 +27,7 @@ import { S3Service } from 'src/s3/s3.service';
 import { randomBytes } from 'crypto';
 import { Image, S3Image } from './entities/image.entity';
 import { ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { ImageResponseDto } from './dto/image-response.dto';
 
 @Controller('images')
 export class ImagesController {
@@ -53,6 +56,7 @@ export class ImagesController {
       },
     },
   })
+  @SerializeOptions({ type: ImageResponseDto })
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createImageDto: CreateImageDto,
@@ -65,7 +69,7 @@ export class ImagesController {
       }),
     )
     image: Express.Multer.File,
-  ): Promise<S3Image> {
+  ): Promise<ImageResponseDto> {
     const uniqueName: string = randomBytes(32).toString('hex');
     const newImage: Image = await this.imagesService.create(
       createImageDto,
@@ -87,7 +91,10 @@ export class ImagesController {
   }
 
   @Get()
-  async findMany(@Query() query: ImageSearchOptionsDto): Promise<S3Image[]> {
+  @SerializeOptions({ type: ImageResponseDto })
+  async findMany(
+    @Query() query: ImageSearchOptionsDto,
+  ): Promise<ImageResponseDto[]> {
     const images: Image[] = await this.imagesService.findMany(query);
     const imagesWithUrls: S3Image[] = await Promise.all(
       images.map(async (image) => {
@@ -104,7 +111,8 @@ export class ImagesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<S3Image> {
+  @SerializeOptions({ type: ImageResponseDto })
+  async findOne(@Param('id') id: string): Promise<ImageResponseDto> {
     const image = await this.imagesService.findOne(id);
 
     if (!image) throw new NotFoundException();
@@ -118,20 +126,23 @@ export class ImagesController {
   }
 
   @Patch(':id')
+  @SerializeOptions({ type: ImageResponseDto })
   async update(
     @Param('id') id: string,
     @Body() updateImageDto: UpdateImageDto,
-    // Url is not returned since image itself can not be changed
-  ): Promise<Image> {
+  ): Promise<ImageResponseDto> {
     const updatedImage = await this.imagesService.update(id, updateImageDto);
 
     if (!updatedImage) throw new NotFoundException();
 
-    return updatedImage;
+    const url = await this.s3Service.getImageUrl(updatedImage.uniqueName, 3600);
+
+    return { ...updatedImage, url };
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<Image> {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string): Promise<void> {
     const deletedImage = await this.imagesService.remove(id);
 
     if (!deletedImage) throw new NotFoundException();
@@ -143,6 +154,6 @@ export class ImagesController {
       console.error(err);
     }
 
-    return deletedImage;
+    return;
   }
 }

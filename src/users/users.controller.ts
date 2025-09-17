@@ -8,15 +8,18 @@ import {
   Delete,
   Query,
   NotFoundException,
+  SerializeOptions,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ImagesService } from 'src/images/images.service';
 import { ImageSearchOptionsDto } from 'src/images/dto/image-search-options.dto';
-import { User } from './entities/user.entity';
 import { S3Image, Image } from 'src/images/entities/image.entity';
 import { S3Service } from 'src/s3/s3.service';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Controller('users')
 export class UsersController {
@@ -27,12 +30,14 @@ export class UsersController {
   ) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+  @SerializeOptions({ type: UserResponseDto })
+  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return await this.usersService.create(createUserDto);
   }
 
   @Get()
-  async findAll(): Promise<User[]> {
+  @SerializeOptions({ type: UserResponseDto })
+  async findAll(): Promise<UserResponseDto[]> {
     return await this.usersService.findAll();
   }
 
@@ -57,7 +62,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<User> {
+  @SerializeOptions({ type: UserResponseDto })
+  async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     const user = await this.usersService.findOne(id);
 
     if (!user) throw new NotFoundException();
@@ -66,10 +72,11 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @SerializeOptions({ type: UserResponseDto })
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User> {
+  ): Promise<UserResponseDto> {
     const updatedUser = await this.usersService.update(id, updateUserDto);
 
     if (!updatedUser) throw new NotFoundException();
@@ -78,11 +85,12 @@ export class UsersController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<User> {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string): Promise<void> {
     const deletedUser = await this.usersService.remove(id);
 
     if (!deletedUser) throw new NotFoundException();
 
-    return deletedUser;
+    return;
   }
 }
