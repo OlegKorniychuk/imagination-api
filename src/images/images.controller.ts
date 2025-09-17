@@ -45,7 +45,7 @@ export class ImagesController {
       }),
     )
     image: Express.Multer.File,
-  ) {
+  ): Promise<S3Image> {
     const uniqueName: string = randomBytes(32).toString('hex');
     const newImage: Image = await this.imagesService.create(
       createImageDto,
@@ -62,11 +62,12 @@ export class ImagesController {
       );
     }
 
-    return newImage;
+    const url = await this.s3Service.getImageUrl(uniqueName, 3600);
+    return { ...newImage, url };
   }
 
   @Get()
-  async findMany(@Query() query: ImageSearchOptionsDto) {
+  async findMany(@Query() query: ImageSearchOptionsDto): Promise<S3Image[]> {
     const images: Image[] = await this.imagesService.findMany(query);
     const imagesWithUrls: S3Image[] = await Promise.all(
       images.map(async (image) => {
@@ -83,7 +84,7 @@ export class ImagesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<S3Image> {
     const image = await this.imagesService.findOne(id);
 
     if (!image) throw new NotFoundException();
@@ -100,7 +101,8 @@ export class ImagesController {
   async update(
     @Param('id') id: string,
     @Body() updateImageDto: UpdateImageDto,
-  ) {
+    // Url is not returned since image itself can not be changed
+  ): Promise<Image> {
     const updatedImage = await this.imagesService.update(id, updateImageDto);
 
     if (!updatedImage) throw new NotFoundException();
@@ -109,7 +111,7 @@ export class ImagesController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<Image> {
     const deletedImage = await this.imagesService.remove(id);
 
     if (!deletedImage) throw new NotFoundException();
