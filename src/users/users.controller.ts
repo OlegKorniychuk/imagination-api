@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   NotFoundException,
+  SerializeOptions,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,7 +18,6 @@ import { ImageSearchOptionsDto } from 'src/images/dto/image-search-options.dto';
 import { S3Image, Image } from 'src/images/entities/image.entity';
 import { S3Service } from 'src/s3/s3.service';
 import { UserResponseDto } from './dto/user-response.dto';
-import { plainToInstance } from 'class-transformer';
 
 @Controller('users')
 export class UsersController {
@@ -28,17 +28,15 @@ export class UsersController {
   ) {}
 
   @Post()
+  @SerializeOptions({ type: UserResponseDto })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const newUser = await this.usersService.create(createUserDto);
-
-    return plainToInstance(UserResponseDto, newUser);
+    return await this.usersService.create(createUserDto);
   }
 
   @Get()
+  @SerializeOptions({ type: UserResponseDto })
   async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.usersService.findAll();
-
-    return plainToInstance(UserResponseDto, users);
+    return await this.usersService.findAll();
   }
 
   @Get(':id/images')
@@ -62,15 +60,17 @@ export class UsersController {
   }
 
   @Get(':id')
+  @SerializeOptions({ type: UserResponseDto })
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     const user = await this.usersService.findOne(id);
 
     if (!user) throw new NotFoundException();
 
-    return plainToInstance(UserResponseDto, user);
+    return user;
   }
 
   @Patch(':id')
+  @SerializeOptions({ type: UserResponseDto })
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -79,15 +79,16 @@ export class UsersController {
 
     if (!updatedUser) throw new NotFoundException();
 
-    return plainToInstance(UserResponseDto, updatedUser);
+    return updatedUser;
   }
 
   @Delete(':id')
+  @SerializeOptions({ type: UserResponseDto })
   async remove(@Param('id') id: string): Promise<UserResponseDto> {
     const deletedUser = await this.usersService.remove(id);
 
     if (!deletedUser) throw new NotFoundException();
 
-    return plainToInstance(UserResponseDto, deletedUser);
+    return deletedUser;
   }
 }
