@@ -11,8 +11,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { LoginRequestBodyDto, LoginResponseDto } from './auth/dto/login.dto';
-import { UserProfileDto } from './users/dto/user-profile.dto';
 import { User } from './users/entities/user.entity';
+
+// will be removed along with /me endpoint, used for auth development
+class TemporaryMeResponse {
+  id: string;
+  email: string;
+}
 
 @ApiTags('Authentication & healthcheck')
 @Controller()
@@ -39,21 +44,21 @@ export class AppController {
     type: LoginResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  login(@Request() req: { user: User }) {
+  login(@Request() req: { user: User }): { access_token: string } {
     return this.authService.login(req.user);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
+  @Get('/me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get user profile' })
+  @ApiOperation({ summary: 'Get user user token data' })
   @ApiResponse({
     status: 200,
-    description: 'The user profile.',
-    type: UserProfileDto,
+    description: 'The user token data.',
+    type: TemporaryMeResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getProfile(@Request() req: { user: User }): UserProfileDto {
+  getProfile(@Request() req: { user: User }): TemporaryMeResponse {
     return req.user;
   }
 }

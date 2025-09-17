@@ -1,16 +1,28 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Config } from './config/index.config';
-import { ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
+function registerGlobals(app: INestApplication) {
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector), {
+      strategy: 'exposeAll',
+    }),
+  );
+}
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('query parser', 'extended');
+  registerGlobals(app);
 
   const config = new DocumentBuilder()
     .setTitle('Imagination API')
@@ -26,6 +38,7 @@ async function bootstrap() {
   const { PORT } = app.get(Config);
   await app.listen(PORT);
 }
+
 bootstrap().catch((err) => {
   throw err;
 });
