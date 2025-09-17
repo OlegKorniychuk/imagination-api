@@ -1,6 +1,5 @@
 import { Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { AppService } from './app.service';
-import { SafeUser } from './users/entities/safe-user.entity';
 import { LocalAuthGuard } from './auth/strategies/local/local.guard';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/strategies/jwt/jwt.guard';
@@ -13,6 +12,7 @@ import {
 } from '@nestjs/swagger';
 import { LoginRequestBodyDto, LoginResponseDto } from './auth/dto/login.dto';
 import { UserProfileDto } from './users/dto/user-profile.dto';
+import { User } from './users/entities/user.entity';
 
 @ApiTags('Authentication & healthcheck')
 @Controller()
@@ -39,7 +39,7 @@ export class AppController {
     type: LoginResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  login(@Request() req: { user: SafeUser }) {
+  login(@Request() req: { user: User }) {
     return this.authService.login(req.user);
   }
 
@@ -53,7 +53,7 @@ export class AppController {
     type: UserProfileDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  getProfile(@Request() req: { user: SafeUser }): UserProfileDto {
+  getProfile(@Request() req: { user: User }): UserProfileDto {
     return req.user;
   }
 }
