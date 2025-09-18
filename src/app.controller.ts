@@ -2,7 +2,6 @@ import { Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LocalAuthGuard } from './auth/strategies/local/local.guard';
 import { AuthService } from './auth/auth.service';
-import { JwtAuthGuard } from './auth/strategies/jwt/jwt.guard';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -12,6 +11,7 @@ import {
 } from '@nestjs/swagger';
 import { LoginRequestBodyDto, LoginResponseDto } from './auth/dto/login.dto';
 import { User } from './users/entities/user.entity';
+import { Public } from './auth/public.decorator';
 
 // will be removed along with /me endpoint, used for auth development
 class TemporaryMeResponse {
@@ -27,6 +27,7 @@ export class AppController {
     private authService: AuthService,
   ) {}
 
+  @Public()
   @Get('/hc')
   @ApiOperation({ summary: 'Health Check' })
   @ApiResponse({ status: 200, description: 'Service is up and running.' })
@@ -34,6 +35,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  @Public()
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
   @ApiOperation({ summary: 'Log in a user' })
@@ -48,7 +50,6 @@ export class AppController {
     return this.authService.login(req.user);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('/me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user user token data' })
