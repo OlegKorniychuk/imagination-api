@@ -4,10 +4,6 @@ import { IsArray, IsOptional, IsString } from 'class-validator';
 export class CreateImageDto {
   @ApiProperty()
   @IsString()
-  authorId: string;
-
-  @ApiProperty()
-  @IsString()
   title: string;
 
   @ApiProperty()

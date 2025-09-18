@@ -17,6 +17,7 @@ import {
   NotFoundException,
   HttpCode,
   SerializeOptions,
+  Request,
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { UpdateImageDto } from './dto/update-image.dto';
@@ -28,6 +29,7 @@ import { randomBytes } from 'crypto';
 import { Image, S3Image } from './entities/image.entity';
 import { ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { ImageResponseDto } from './dto/image-response.dto';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('images')
 export class ImagesController {
@@ -59,12 +61,13 @@ export class ImagesController {
   @SerializeOptions({ type: ImageResponseDto })
   @UseInterceptors(FileInterceptor('image'))
   async create(
+    @Request() reqest: { user: { id: string; email: string } },
     @Body() createImageDto: CreateImageDto,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
-          new MaxFileSizeValidator({ maxSize: 500 * 1024 }),
+          new MaxFileSizeValidator({ maxSize: 500 * 1024 * 1024 }),
         ],
       }),
     )
@@ -73,12 +76,13 @@ export class ImagesController {
     const uniqueName: string = randomBytes(32).toString('hex');
     const newImage: Image = await this.imagesService.create(
       createImageDto,
+      reqest.user.id,
       uniqueName,
     );
     try {
       await this.s3Service.uploadImage(image, uniqueName);
     } catch {
-      await this.imagesService.remove(newImage.id);
+      await this.imagesService.remove(newImage.id, reqest.user.id);
 
       throw new HttpException(
         'Failed to save image',
@@ -91,6 +95,7 @@ export class ImagesController {
   }
 
   @Get()
+  @Public()
   @SerializeOptions({ type: ImageResponseDto })
   async findMany(
     @Query() query: ImageSearchOptionsDto,
@@ -128,10 +133,15 @@ export class ImagesController {
   @Patch(':id')
   @SerializeOptions({ type: ImageResponseDto })
   async update(
+    @Request() reqest: { user: { id: string; email: string } },
     @Param('id') id: string,
     @Body() updateImageDto: UpdateImageDto,
   ): Promise<ImageResponseDto> {
-    const updatedImage = await this.imagesService.update(id, updateImageDto);
+    const updatedImage = await this.imagesService.update(
+      id,
+      updateImageDto,
+      reqest.user.id,
+    );
 
     if (!updatedImage) throw new NotFoundException();
 
@@ -142,8 +152,11 @@ export class ImagesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
-    const deletedImage = await this.imagesService.remove(id);
+  async remove(
+    @Request() reqest: { user: { id: string; email: string } },
+    @Param('id') id: string,
+  ): Promise<void> {
+    const deletedImage = await this.imagesService.remove(id, reqest.user.id);
 
     if (!deletedImage) throw new NotFoundException();
 
