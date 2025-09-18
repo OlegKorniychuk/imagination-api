@@ -1,4 +1,8 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { compare, hash } from 'bcrypt';
@@ -53,5 +57,29 @@ export class AuthService {
       email: payload.email,
       password: hashedPassword,
     });
+  }
+
+  async refreshAccessToken(token: string): Promise<string> {
+    try {
+      const payload = await this.jwtService.verifyAsync<AccessTokenPayload>(
+        token,
+        {
+          secret: this.config.REFRESH_TOKEN_SECRET,
+        },
+      );
+
+      const newAccessTokenPayload: AccessTokenPayload = {
+        sub: payload.sub,
+        email: payload.email,
+      };
+
+      // 3. Sign and return the new access token
+      return this.jwtService.sign(newAccessTokenPayload, {
+        secret: this.config.ACCESS_TOKEN_SECRET,
+        expiresIn: this.config.ACCESS_TOKEN_EXPIRES_IN,
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LocalAuthGuard } from './auth/strategies/local/local.guard';
@@ -25,7 +26,7 @@ import { User } from './users/entities/user.entity';
 import { Public } from './auth/public.decorator';
 import { SignUpDto } from './auth/dto/sign-up.dto';
 import { UserResponseDto } from './users/dto/user-response.dto';
-import { Response } from 'express';
+import { Response, Request as ExpressRequest } from 'express';
 import { Config } from './config/index.config';
 
 // will be removed along with /me endpoint, used for auth development
@@ -90,5 +91,24 @@ export class AppController {
   @SerializeOptions({ type: UserResponseDto })
   async signUp(@Body() signupDto: SignUpDto): Promise<UserResponseDto> {
     return await this.authService.signUp(signupDto);
+  }
+
+  @Post('/auth/refresh')
+  @Public()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async refresh(
+    @Request() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies[this.config.REFRESH_COOKIE_NAME] as string;
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('No refresh token found');
+    }
+
+    const newAccessToken =
+      await this.authService.refreshAccessToken(refreshToken);
+
+    res.cookie(this.config.ACCESS_COOKIE_NAME, newAccessToken);
   }
 }
