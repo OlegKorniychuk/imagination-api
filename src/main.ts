@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 
 function registerGlobals(app: INestApplication) {
   app.setGlobalPrefix('api/v1');
@@ -22,6 +23,7 @@ function registerGlobals(app: INestApplication) {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.set('query parser', 'extended');
+  app.use(cookieParser());
   registerGlobals(app);
 
   const config = new DocumentBuilder()

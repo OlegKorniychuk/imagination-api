@@ -1,4 +1,12 @@
-import { Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Request,
+  Body,
+  SerializeOptions,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { LocalAuthGuard } from './auth/strategies/local/local.guard';
 import { AuthService } from './auth/auth.service';
@@ -12,6 +20,8 @@ import {
 import { LoginRequestBodyDto, LoginResponseDto } from './auth/dto/login.dto';
 import { User } from './users/entities/user.entity';
 import { Public } from './auth/public.decorator';
+import { SignUpDto } from './auth/dto/sign-up.dto';
+import { UserResponseDto } from './users/dto/user-response.dto';
 
 // will be removed along with /me endpoint, used for auth development
 class TemporaryMeResponse {
@@ -61,5 +71,12 @@ export class AppController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   getProfile(@Request() req: { user: User }): TemporaryMeResponse {
     return req.user;
+  }
+
+  @Post('auth/signup')
+  @Public()
+  @SerializeOptions({ type: UserResponseDto })
+  async signUp(@Body() signupDto: SignUpDto): Promise<UserResponseDto> {
+    return await this.authService.signUp(signupDto);
   }
 }
