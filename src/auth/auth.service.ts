@@ -5,12 +5,14 @@ import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { AccessTokenPayload } from './entities/access-token-payload';
 import { SignUpDto } from './dto/sign-up.dto';
+import { Config } from 'src/config/index.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private config: Config,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -24,7 +26,14 @@ export class AuthService {
   login(user: User) {
     const payload: AccessTokenPayload = { email: user.email, sub: user.id };
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, {
+        expiresIn: this.config.ACCESS_TOKEN_EXPIRES_IN,
+        secret: this.config.ACCESS_TOKEN_SECRET,
+      }),
+      refreshToken: this.jwtService.sign(payload, {
+        expiresIn: this.config.REFRESH_TOKEN_EXPIRES_IN,
+        secret: this.config.REFRESH_TOKEN_SECRET,
+      }),
     };
   }
 

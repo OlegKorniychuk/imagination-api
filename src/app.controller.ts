@@ -6,6 +6,9 @@ import {
   Request,
   Body,
   SerializeOptions,
+  Res,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LocalAuthGuard } from './auth/strategies/local/local.guard';
@@ -22,6 +25,8 @@ import { User } from './users/entities/user.entity';
 import { Public } from './auth/public.decorator';
 import { SignUpDto } from './auth/dto/sign-up.dto';
 import { UserResponseDto } from './users/dto/user-response.dto';
+import { Response } from 'express';
+import { Config } from './config/index.config';
 
 // will be removed along with /me endpoint, used for auth development
 class TemporaryMeResponse {
@@ -35,6 +40,7 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private authService: AuthService,
+    private config: Config,
   ) {}
 
   @Public()
@@ -51,13 +57,19 @@ export class AppController {
   @ApiOperation({ summary: 'Log in a user' })
   @ApiBody({ type: LoginRequestBodyDto })
   @ApiResponse({
-    status: 201,
+    status: 204,
     description: 'User successfully logged in.',
     type: LoginResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  login(@Request() req: { user: User }): { access_token: string } {
-    return this.authService.login(req.user);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  login(
+    @Request() req: { user: User },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = this.authService.login(req.user);
+    res.cookie(this.config.ACCESS_COOKIE_NAME, tokens.accessToken);
+    res.cookie(this.config.REFRESH_COOKIE_NAME, tokens.refreshToken);
   }
 
   @Get('/me')

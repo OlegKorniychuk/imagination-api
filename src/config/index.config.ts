@@ -29,4 +29,21 @@ export class Config {
       'Should be formatted like 12h (see ms package documentation for details)',
   })
   ACCESS_TOKEN_EXPIRES_IN: string;
+
+  @IsString()
+  ACCESS_COOKIE_NAME: string;
+
+  @IsString()
+  @Length(32, 32)
+  REFRESH_TOKEN_SECRET: string;
+
+  @IsString()
+  @Matches(/^\d+\s?(ms|s|m|h|d|w|y)$/, {
+    message:
+      'Should be formatted like 12h (see ms package documentation for details)',
+  })
+  REFRESH_TOKEN_EXPIRES_IN: string;
+
+  @IsString()
+  REFRESH_COOKIE_NAME: string;
 }
