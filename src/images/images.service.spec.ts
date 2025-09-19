@@ -14,6 +14,7 @@ const mockImage: Image = {
   title: 'A beautiful sunset',
   description: null,
   tags: [],
+  isPublic: true,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
