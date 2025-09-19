@@ -78,6 +78,7 @@ describe('ImagesController', () => {
 
       expect(mockImagesService.create).toHaveBeenCalledWith(
         dto,
+        mockUser.user.id,
         expect.any(String),
       );
       expect(mockS3Service.uploadImage).toHaveBeenCalledWith(
@@ -104,7 +105,10 @@ describe('ImagesController', () => {
         ),
       );
 
-      expect(mockImagesService.remove).toHaveBeenCalledWith(mockImage.id);
+      expect(mockImagesService.remove).toHaveBeenCalledWith(
+        mockImage.id,
+        mockUser.user.id,
+      );
     });
   });
 
@@ -159,7 +163,11 @@ describe('ImagesController', () => {
 
       const result = await controller.update(mockUser, mockImage.id, dto);
 
-      expect(mockImagesService.update).toHaveBeenCalledWith(mockImage.id, dto);
+      expect(mockImagesService.update).toHaveBeenCalledWith(
+        mockImage.id,
+        dto,
+        mockUser.user.id,
+      );
       expect(result).toEqual(updatedImage);
     });
 
@@ -181,7 +189,10 @@ describe('ImagesController', () => {
 
       const result = await controller.remove(mockUser, mockImage.id);
 
-      expect(mockImagesService.remove).toHaveBeenCalledWith(mockImage.id);
+      expect(mockImagesService.remove).toHaveBeenCalledWith(
+        mockImage.id,
+        mockUser.user.id,
+      );
       expect(mockS3Service.deleteImage).toHaveBeenCalledWith(
         mockImage.uniqueName,
       );
