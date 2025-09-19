@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { DrizzleDB } from 'src/drizzle/types/drizzle';
@@ -14,11 +14,12 @@ export class ImagesService {
 
   async create(
     createImageDto: CreateImageDto,
+    authorId: string,
     uniqueName: string,
   ): Promise<Image> {
     const [newImage] = await this.db
       .insert(images)
-      .values({ ...createImageDto, uniqueName })
+      .values({ ...createImageDto, uniqueName, authorId })
       .returning();
 
     return newImage;
@@ -108,7 +109,15 @@ export class ImagesService {
   async update(
     id: string,
     updateImageDto: UpdateImageDto,
+    authorId: string,
   ): Promise<Image | undefined> {
+    const [image] = await this.db
+      .select({ authorId: images.authorId })
+      .from(images)
+      .where(eq(images.id, id));
+
+    if (image.authorId !== authorId) throw new ForbiddenException();
+
     const [updatedImage] = await this.db
       .update(images)
       .set(updateImageDto)
@@ -118,7 +127,14 @@ export class ImagesService {
     return updatedImage;
   }
 
-  async remove(id: string): Promise<Image | undefined> {
+  async remove(id: string, authorId: string): Promise<Image | undefined> {
+    const [image] = await this.db
+      .select({ authorId: images.authorId })
+      .from(images)
+      .where(eq(images.id, id));
+
+    if (image.authorId !== authorId) throw new ForbiddenException();
+
     const [deletedImage] = await this.db
       .delete(images)
       .where(eq(images.id, id))
