@@ -101,6 +101,7 @@ describe('ImagesService', () => {
   describe('update', () => {
     it('should update an image record and return it', async () => {
       const mockUpdateData: UpdateImageDto = { title: 'new title' };
+      mockDrizzleDB.where.mockReturnValueOnce([mockImage]);
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
       const mockAuthorId = mockImage.authorId;
 
@@ -118,6 +119,7 @@ describe('ImagesService', () => {
 
   describe('remove', () => {
     it('should delete an image record from DB', async () => {
+      mockDrizzleDB.where.mockReturnValueOnce([mockImage]);
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
       const mockAuthorId = mockImage.authorId;
 
