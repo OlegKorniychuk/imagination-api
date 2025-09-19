@@ -65,7 +65,8 @@ describe('ImagesController', () => {
   });
 
   describe('create', () => {
-    const dto: CreateImageDto = { title: 'test', authorId: 'uuid' };
+    const dto: CreateImageDto = { title: 'test' };
+    const mockUser = { user: { id: mockImage.authorId, email: 'email' } };
     const file = { buffer: Buffer.from('test') } as Express.Multer.File;
 
     it('should create an image record, upload to S3, and return the record with a signed URL', async () => {
@@ -73,7 +74,7 @@ describe('ImagesController', () => {
       mockS3Service.uploadImage.mockResolvedValue(undefined);
       mockS3Service.getImageUrl.mockResolvedValue(mockSignedUrl);
 
-      const result = await controller.create(dto, file);
+      const result = await controller.create(mockUser, dto, file);
 
       expect(mockImagesService.create).toHaveBeenCalledWith(
         dto,
@@ -94,8 +95,9 @@ describe('ImagesController', () => {
       const uploadError = new Error('S3 upload failed');
       mockImagesService.create.mockResolvedValue(mockImage);
       mockS3Service.uploadImage.mockRejectedValue(uploadError);
+      const mockUser = { user: { id: mockImage.authorId, email: 'email' } };
 
-      await expect(controller.create(dto, file)).rejects.toThrow(
+      await expect(controller.create(mockUser, dto, file)).rejects.toThrow(
         new HttpException(
           'Failed to save image',
           HttpStatus.INTERNAL_SERVER_ERROR,
@@ -153,8 +155,9 @@ describe('ImagesController', () => {
     it('should update an image and return the updated record', async () => {
       const updatedImage = { ...mockImage, ...dto };
       mockImagesService.update.mockResolvedValue(updatedImage);
+      const mockUser = { user: { id: mockImage.authorId, email: 'email' } };
 
-      const result = await controller.update(mockImage.id, dto);
+      const result = await controller.update(mockUser, mockImage.id, dto);
 
       expect(mockImagesService.update).toHaveBeenCalledWith(mockImage.id, dto);
       expect(result).toEqual(updatedImage);
@@ -162,10 +165,11 @@ describe('ImagesController', () => {
 
     it('should throw NotFoundException if image to update is not found', async () => {
       mockImagesService.update.mockResolvedValue(null);
+      const mockUser = { user: { id: mockImage.authorId, email: 'email' } };
 
-      await expect(controller.update('non-existent-id', dto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.update(mockUser, 'non-existent-id', dto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -173,8 +177,9 @@ describe('ImagesController', () => {
     it('should delete an image from the DB and S3', async () => {
       mockImagesService.remove.mockResolvedValue(mockImage);
       mockS3Service.deleteImage.mockResolvedValue(undefined);
+      const mockUser = { user: { id: mockImage.authorId, email: 'email' } };
 
-      const result = await controller.remove(mockImage.id);
+      const result = await controller.remove(mockUser, mockImage.id);
 
       expect(mockImagesService.remove).toHaveBeenCalledWith(mockImage.id);
       expect(mockS3Service.deleteImage).toHaveBeenCalledWith(
@@ -185,10 +190,11 @@ describe('ImagesController', () => {
 
     it('should throw NotFoundException if image to delete is not found', async () => {
       mockImagesService.remove.mockResolvedValue(null);
+      const mockUser = { user: { id: mockImage.authorId, email: 'email' } };
 
-      await expect(controller.remove('non-existent-id')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.remove(mockUser, 'non-existent-id'),
+      ).rejects.toThrow(NotFoundException);
       expect(mockS3Service.deleteImage).not.toHaveBeenCalled();
     });
 
@@ -196,8 +202,9 @@ describe('ImagesController', () => {
       const s3Error = new Error('S3 delete failed');
       mockImagesService.remove.mockResolvedValue(mockImage);
       mockS3Service.deleteImage.mockRejectedValue(s3Error);
+      const mockUser = { user: { id: mockImage.authorId, email: 'email' } };
 
-      const result = await controller.remove(mockImage.id);
+      const result = await controller.remove(mockUser, mockImage.id);
 
       expect(result).toBeUndefined();
       expect(mockS3Service.deleteImage).toHaveBeenCalledWith(

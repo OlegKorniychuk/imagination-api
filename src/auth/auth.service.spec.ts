@@ -4,6 +4,8 @@ import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
+import { Config } from 'src/config/index.config';
+import { MockConfig } from 'test/mocks/config.mock';
 
 jest.mock('bcrypt');
 
@@ -20,6 +22,7 @@ const mockAccessToken = 'mock.jwt.token.string';
 
 describe('AuthService', () => {
   let service: AuthService;
+  let mockConfig: MockConfig;
 
   const mockUsersService = {
     findByEmail: jest.fn(),
@@ -30,11 +33,13 @@ describe('AuthService', () => {
   };
 
   beforeEach(async () => {
+    mockConfig = new MockConfig();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
+        { provide: Config, useValue: mockConfig },
       ],
     }).compile();
 
@@ -91,7 +96,7 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should sign a payload and return an access token object', () => {
+    it('should sign and return access and refresh tokens', () => {
       mockJwtService.sign.mockReturnValue(mockAccessToken);
       const expectedPayload = {
         email: mockUser.email,
@@ -100,8 +105,19 @@ describe('AuthService', () => {
 
       const result = service.login(mockUser);
 
-      expect(mockJwtService.sign).toHaveBeenCalledWith(expectedPayload);
-      expect(result).toEqual({ access_token: mockAccessToken });
+      expect(mockJwtService.sign).toHaveBeenCalledTimes(2);
+      expect(mockJwtService.sign).toHaveBeenCalledWith(expectedPayload, {
+        expiresIn: mockConfig.ACCESS_TOKEN_EXPIRES_IN,
+        secret: mockConfig.ACCESS_TOKEN_SECRET,
+      });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(expectedPayload, {
+        expiresIn: mockConfig.REFRESH_TOKEN_EXPIRES_IN,
+        secret: mockConfig.REFRESH_TOKEN_SECRET,
+      });
+      expect(result).toEqual({
+        accessToken: mockAccessToken,
+        refreshToken: mockAccessToken,
+      });
     });
   });
 });

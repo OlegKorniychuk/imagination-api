@@ -47,13 +47,17 @@ describe('ImagesService', () => {
     it('should create an image record and return it', async () => {
       const createImageDto: CreateImageDto = {
         title: mockImage.title,
-        authorId: mockImage.authorId,
       };
+      const mockAuthorId = mockImage.authorId;
       const mockUniqueName = 'unique-name';
 
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
 
-      const result = await service.create(createImageDto, mockUniqueName);
+      const result = await service.create(
+        createImageDto,
+        mockUniqueName,
+        mockAuthorId,
+      );
 
       expect(mockDrizzleDB.insert).toHaveBeenCalledWith(images);
       expect(mockDrizzleDB.values).toHaveBeenLastCalledWith(
@@ -98,8 +102,13 @@ describe('ImagesService', () => {
     it('should update an image record and return it', async () => {
       const mockUpdateData: UpdateImageDto = { title: 'new title' };
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
+      const mockAuthorId = mockImage.authorId;
 
-      const result = await service.update(mockImage.id, mockUpdateData);
+      const result = await service.update(
+        mockImage.id,
+        mockUpdateData,
+        mockAuthorId,
+      );
 
       expect(mockDrizzleDB.update).toHaveBeenCalledWith(images);
       expect(mockDrizzleDB.set).toHaveBeenCalledWith(mockUpdateData);
@@ -110,8 +119,9 @@ describe('ImagesService', () => {
   describe('remove', () => {
     it('should delete an image record from DB', async () => {
       mockDrizzleDB.returning.mockResolvedValue([mockImage]);
+      const mockAuthorId = mockImage.authorId;
 
-      const result = await service.remove(mockImage.id);
+      const result = await service.remove(mockImage.id, mockAuthorId);
 
       expect(mockDrizzleDB.delete).toHaveBeenCalledWith(images);
       expect(result).toEqual(mockImage);
