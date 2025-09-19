@@ -1,25 +1,18 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
   Query,
   NotFoundException,
   SerializeOptions,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { ImagesService } from 'src/images/images.service';
 import { ImageSearchOptionsDto } from 'src/images/dto/image-search-options.dto';
 import { S3Image, Image } from 'src/images/entities/image.entity';
 import { S3Service } from 'src/s3/s3.service';
 import { UserResponseDto } from './dto/user-response.dto';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -29,19 +22,21 @@ export class UsersController {
     private s3Service: S3Service,
   ) {}
 
-  @Post()
-  @SerializeOptions({ type: UserResponseDto })
-  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return await this.usersService.create(createUserDto);
-  }
+  // @Post()
+  // @SerializeOptions({ type: UserResponseDto })
+  // async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  //   return await this.usersService.create(createUserDto);
+  // }
 
   @Get()
+  @Public()
   @SerializeOptions({ type: UserResponseDto })
   async findAll(): Promise<UserResponseDto[]> {
     return await this.usersService.findAll();
   }
 
   @Get(':id/images')
+  @Public()
   async findUserImages(
     @Query() query: ImageSearchOptionsDto,
     @Param('id') id: string,
@@ -62,6 +57,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @Public()
   @SerializeOptions({ type: UserResponseDto })
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
     const user = await this.usersService.findOne(id);
@@ -71,26 +67,26 @@ export class UsersController {
     return user;
   }
 
-  @Patch(':id')
-  @SerializeOptions({ type: UserResponseDto })
-  async update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
-    const updatedUser = await this.usersService.update(id, updateUserDto);
+  // @Patch(':id')
+  // @SerializeOptions({ type: UserResponseDto })
+  // async update(
+  //   @Param('id') id: string,
+  //   @Body() updateUserDto: UpdateUserDto,
+  // ): Promise<UserResponseDto> {
+  //   const updatedUser = await this.usersService.update(id, updateUserDto);
 
-    if (!updatedUser) throw new NotFoundException();
+  //   if (!updatedUser) throw new NotFoundException();
 
-    return updatedUser;
-  }
+  //   return updatedUser;
+  // }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id') id: string): Promise<void> {
-    const deletedUser = await this.usersService.remove(id);
+  // @Delete(':id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async remove(@Param('id') id: string): Promise<void> {
+  //   const deletedUser = await this.usersService.remove(id);
 
-    if (!deletedUser) throw new NotFoundException();
+  //   if (!deletedUser) throw new NotFoundException();
 
-    return;
-  }
+  //   return;
+  // }
 }

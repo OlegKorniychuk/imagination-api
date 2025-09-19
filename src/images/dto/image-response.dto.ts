@@ -22,6 +22,9 @@ export class ImageResponseDto implements S3Image {
   uniqueName: string;
 
   @ApiProperty()
+  isPublic: boolean;
+
+  @ApiProperty()
   url: string;
 
   @ApiProperty()

@@ -27,6 +27,7 @@ export class ImagesService {
 
   async findMany(
     options: ImageSearchOptionsDto = {},
+    // pass this for user to get his own images, including private
     authorId?: string,
   ): Promise<Image[]> {
     const { filter, sort, paginate } = options;
@@ -52,7 +53,11 @@ export class ImagesService {
       }
     }
 
-    if (authorId) idSubquery = idSubquery.where(eq(images.authorId, authorId));
+    if (authorId) {
+      idSubquery = idSubquery.where(eq(images.authorId, authorId));
+    } else {
+      idSubquery = idSubquery.where(eq(images.isPublic, true));
+    }
 
     // Sorting
 
@@ -97,11 +102,15 @@ export class ImagesService {
     return await finalQuery.then((rows) => rows.map((row) => row.images));
   }
 
-  async findOne(id: string): Promise<Image | undefined> {
+  // pass authorId to get user's private picture
+  async findOne(id: string, authorId?: string): Promise<Image | undefined> {
     const [image] = await this.db
       .select()
       .from(images)
       .where(eq(images.id, id));
+
+    if (image && !image.isPublic && authorId !== image.authorId)
+      throw new ForbiddenException();
 
     return image;
   }

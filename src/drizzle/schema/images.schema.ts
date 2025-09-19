@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, text, uuid, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, uuid, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { users } from './users.schema';
 
 export const images = pgTable('images', {
@@ -14,6 +14,7 @@ export const images = pgTable('images', {
     .array()
     .notNull()
     .default(sql`ARRAY[]::text[]`),
+  isPublic: boolean('is_public').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

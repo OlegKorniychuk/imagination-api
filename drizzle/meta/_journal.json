@@ -29,6 +29,13 @@
       "when": 1757004275483,
       "tag": "0003_low_mysterio",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1758270885957,
+      "tag": "0004_rare_karma",
+      "breakpoints": true
     }
   ]
 }
