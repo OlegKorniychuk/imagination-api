@@ -22,8 +22,17 @@ function registerGlobals(app: INestApplication) {
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const rootConfig = app.get(RootConfig);
+
   app.set('query parser', 'extended');
   app.use(cookieParser());
+  app.enableCors({
+    origin: rootConfig.app.ORIGIN,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   registerGlobals(app);
 
   const config = new DocumentBuilder()
@@ -37,7 +46,6 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: false });
   SwaggerModule.setup('api/docs', app, documentFactory);
 
-  const rootConfig = app.get(RootConfig);
   await app.listen(rootConfig.app.PORT);
 }
 

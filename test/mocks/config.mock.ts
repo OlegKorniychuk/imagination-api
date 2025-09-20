@@ -3,6 +3,7 @@ import { RootConfig } from 'src/config/index.config';
 export class MockConfig implements RootConfig {
   app = {
     PORT: '3500',
+    ORIGIN: ['http://localhost:3080'],
   };
 
   db = {

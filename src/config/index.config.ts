@@ -1,7 +1,9 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsNumberString,
   IsString,
+  IsUrl,
   Length,
   Matches,
   ValidateNested,
@@ -10,6 +12,20 @@ import {
 export class AppConfig {
   @IsNumberString()
   PORT: string;
+
+  @Transform(({ value }): string[] =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsArray()
+  @IsUrl(
+    {
+      protocols: ['http', 'https'],
+      require_tld: false,
+      require_protocol: true,
+    },
+    { each: true },
+  )
+  ORIGIN: string[];
 }
 
 export class DbConfig {
