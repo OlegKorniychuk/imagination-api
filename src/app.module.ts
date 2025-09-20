@@ -13,10 +13,7 @@ import { AuthModule } from 'src/modules/auth/auth.module';
     UsersModule,
     TypedConfigModule.forRoot({
       schema: RootConfig,
-      load: [
-        fileLoader({ basename: '.env-dev' }),
-        dotenvLoader({ separator: '__' }),
-      ],
+      load: [fileLoader(), dotenvLoader({ separator: '__' })],
     }),
     ImagesModule,
     S3Module,
