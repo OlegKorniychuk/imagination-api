@@ -1,6 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Config } from './config/index.config';
+import { RootConfig } from './config/index.config';
 import {
   ClassSerializerInterceptor,
   INestApplication,
@@ -37,8 +37,8 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: false });
   SwaggerModule.setup('api/docs', app, documentFactory);
 
-  const { PORT } = app.get(Config);
-  await app.listen(PORT);
+  const rootConfig = app.get(RootConfig);
+  await app.listen(rootConfig.app.PORT);
 }
 
 bootstrap().catch((err) => {

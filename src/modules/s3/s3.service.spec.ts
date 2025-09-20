@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { S3Service } from './s3.service';
-import { Config } from 'src/config/index.config';
+import { RootConfig, S3Config } from 'src/config/index.config';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -17,7 +17,7 @@ describe('S3 Service', () => {
   let service: S3Service;
   const mockSend = jest.fn();
 
-  const mockConfig: Config = new MockConfig();
+  const mockConfig: RootConfig = new MockConfig();
 
   const mockS3Client = { send: mockSend } as unknown as S3Client;
 
@@ -27,7 +27,7 @@ describe('S3 Service', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         S3Service,
-        { provide: Config, useValue: mockConfig },
+        { provide: S3Config, useValue: mockConfig.s3 },
         { provide: S3Client, useValue: mockS3Client },
       ],
     }).compile();

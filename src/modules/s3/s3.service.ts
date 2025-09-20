@@ -9,18 +9,18 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
-import { Config } from 'src/config/index.config';
+import { S3Config } from 'src/config/index.config';
 
 @Injectable()
 export class S3Service {
   constructor(
-    private config: Config,
+    private s3Config: S3Config,
     private client: S3Client,
   ) {}
 
   async uploadImage(image: Express.Multer.File, uniqueName: string) {
     const params: PutObjectCommandInput = {
-      Bucket: this.config.S3_BUCKET_NAME,
+      Bucket: this.s3Config.BUCKET_NAME,
       Key: uniqueName,
       Body: image.buffer,
       ContentType: image.mimetype,
@@ -31,7 +31,7 @@ export class S3Service {
 
   async getImageUrl(uniqueName: string, expiresIn: number): Promise<string> {
     const params: GetObjectCommandInput = {
-      Bucket: this.config.S3_BUCKET_NAME,
+      Bucket: this.s3Config.BUCKET_NAME,
       Key: uniqueName,
     };
     const command = new GetObjectCommand(params);
@@ -40,7 +40,7 @@ export class S3Service {
 
   async deleteImage(uniqueName: string) {
     const params: DeleteObjectCommandInput = {
-      Bucket: this.config.S3_BUCKET_NAME,
+      Bucket: this.s3Config.BUCKET_NAME,
       Key: uniqueName,
     };
 

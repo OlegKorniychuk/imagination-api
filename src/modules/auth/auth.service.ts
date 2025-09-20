@@ -9,14 +9,14 @@ import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { AccessTokenPayload } from './entities/access-token-payload';
 import { SignUpDto } from './dto/sign-up.dto';
-import { Config } from 'src/config/index.config';
+import { TokensConfig } from 'src/config/index.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private config: Config,
+    private tokensConfig: TokensConfig,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -31,12 +31,12 @@ export class AuthService {
     const payload: AccessTokenPayload = { email: user.email, sub: user.id };
     return {
       accessToken: this.jwtService.sign(payload, {
-        expiresIn: this.config.ACCESS_TOKEN_EXPIRES_IN,
-        secret: this.config.ACCESS_TOKEN_SECRET,
+        expiresIn: this.tokensConfig.ACCESS_TOKEN_EXPIRES_IN,
+        secret: this.tokensConfig.ACCESS_TOKEN_SECRET,
       }),
       refreshToken: this.jwtService.sign(payload, {
-        expiresIn: this.config.REFRESH_TOKEN_EXPIRES_IN,
-        secret: this.config.REFRESH_TOKEN_SECRET,
+        expiresIn: this.tokensConfig.REFRESH_TOKEN_EXPIRES_IN,
+        secret: this.tokensConfig.REFRESH_TOKEN_SECRET,
       }),
     };
   }
@@ -64,7 +64,7 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync<AccessTokenPayload>(
         token,
         {
-          secret: this.config.REFRESH_TOKEN_SECRET,
+          secret: this.tokensConfig.REFRESH_TOKEN_SECRET,
         },
       );
 
@@ -73,10 +73,9 @@ export class AuthService {
         email: payload.email,
       };
 
-      // 3. Sign and return the new access token
       return this.jwtService.sign(newAccessTokenPayload, {
-        secret: this.config.ACCESS_TOKEN_SECRET,
-        expiresIn: this.config.ACCESS_TOKEN_EXPIRES_IN,
+        secret: this.tokensConfig.ACCESS_TOKEN_SECRET,
+        expiresIn: this.tokensConfig.ACCESS_TOKEN_EXPIRES_IN,
       });
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');

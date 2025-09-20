@@ -1,24 +1,37 @@
-import { IsNumberString, IsString, Length, Matches } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsNumberString,
+  IsString,
+  Length,
+  Matches,
+  ValidateNested,
+} from 'class-validator';
 
-export class Config {
-  @IsString()
-  DATABASE_URL: string;
-
+export class AppConfig {
   @IsNumberString()
   PORT: string;
+}
+
+export class DbConfig {
+  @IsString()
+  DATABASE_URL: string;
+}
+
+export class S3Config {
+  @IsString()
+  BUCKET_NAME: string;
 
   @IsString()
-  S3_BUCKET_NAME: string;
+  BUCKET_REGION: string;
 
   @IsString()
-  S3_BUCKET_REGION: string;
+  BUCKET_KEY: string;
 
   @IsString()
-  S3_BUCKET_KEY: string;
+  BUCKET_SECRET: string;
+}
 
-  @IsString()
-  S3_BUCKET_SECRET: string;
-
+export class TokensConfig {
   @IsString()
   @Length(32, 32)
   ACCESS_TOKEN_SECRET: string;
@@ -46,4 +59,22 @@ export class Config {
 
   @IsString()
   REFRESH_COOKIE_NAME: string;
+}
+
+export class RootConfig {
+  @Type(() => AppConfig)
+  @ValidateNested()
+  app: AppConfig;
+
+  @Type(() => DbConfig)
+  @ValidateNested()
+  db: DbConfig;
+
+  @Type(() => S3Config)
+  @ValidateNested()
+  s3: S3Config;
+
+  @Type(() => TokensConfig)
+  @ValidateNested()
+  tokens: TokensConfig;
 }

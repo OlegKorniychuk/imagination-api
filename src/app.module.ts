@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from 'src/modules/users/users.module';
-import { Config } from './config/index.config';
-import { dotenvLoader, TypedConfigModule } from 'nest-typed-config';
+import { RootConfig } from './config/index.config';
+import { dotenvLoader, fileLoader, TypedConfigModule } from 'nest-typed-config';
 import { ImagesModule } from 'src/modules/images/images.module';
 import { S3Module } from 'src/modules/s3/s3.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
@@ -12,8 +12,11 @@ import { AuthModule } from 'src/modules/auth/auth.module';
   imports: [
     UsersModule,
     TypedConfigModule.forRoot({
-      schema: Config,
-      load: dotenvLoader(),
+      schema: RootConfig,
+      load: [
+        fileLoader({ basename: '.env-dev' }),
+        dotenvLoader({ separator: '__' }),
+      ],
     }),
     ImagesModule,
     S3Module,

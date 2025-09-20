@@ -4,7 +4,7 @@ import { User } from 'src/modules/users/entities/user.entity';
 import { UsersService } from 'src/modules/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
-import { Config } from 'src/config/index.config';
+import { TokensConfig } from 'src/config/index.config';
 import { MockConfig } from 'test/mocks/config.mock';
 
 jest.mock('bcrypt');
@@ -39,7 +39,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
-        { provide: Config, useValue: mockConfig },
+        { provide: TokensConfig, useValue: mockConfig.tokens },
       ],
     }).compile();
 
@@ -107,12 +107,12 @@ describe('AuthService', () => {
 
       expect(mockJwtService.sign).toHaveBeenCalledTimes(2);
       expect(mockJwtService.sign).toHaveBeenCalledWith(expectedPayload, {
-        expiresIn: mockConfig.ACCESS_TOKEN_EXPIRES_IN,
-        secret: mockConfig.ACCESS_TOKEN_SECRET,
+        expiresIn: mockConfig.tokens.ACCESS_TOKEN_EXPIRES_IN,
+        secret: mockConfig.tokens.ACCESS_TOKEN_SECRET,
       });
       expect(mockJwtService.sign).toHaveBeenCalledWith(expectedPayload, {
-        expiresIn: mockConfig.REFRESH_TOKEN_EXPIRES_IN,
-        secret: mockConfig.REFRESH_TOKEN_SECRET,
+        expiresIn: mockConfig.tokens.REFRESH_TOKEN_EXPIRES_IN,
+        secret: mockConfig.tokens.REFRESH_TOKEN_SECRET,
       });
       expect(result).toEqual({
         accessToken: mockAccessToken,

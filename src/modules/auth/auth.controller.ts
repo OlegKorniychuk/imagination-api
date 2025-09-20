@@ -16,7 +16,7 @@ import { Public } from './public.decorator';
 import { LocalAuthGuard } from './strategies/local/local.guard';
 import { Request } from '@nestjs/common';
 import { Response, Request as ExpressRequest } from 'express';
-import { Config } from 'src/config/index.config';
+import { TokensConfig } from 'src/config/index.config';
 import { AuthService } from './auth.service';
 import { UserResponseDto } from 'src/modules/users/dto/user-response.dto';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -24,7 +24,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 @Controller('auth')
 export class AuthController {
   constructor(
-    private config: Config,
+    private tokensConfig: TokensConfig,
     private authService: AuthService,
   ) {}
 
@@ -45,8 +45,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const tokens = this.authService.login(req.user);
-    res.cookie(this.config.ACCESS_COOKIE_NAME, tokens.accessToken);
-    res.cookie(this.config.REFRESH_COOKIE_NAME, tokens.refreshToken);
+    res.cookie(this.tokensConfig.ACCESS_COOKIE_NAME, tokens.accessToken);
+    res.cookie(this.tokensConfig.REFRESH_COOKIE_NAME, tokens.refreshToken);
   }
 
   @Post('signup')
@@ -63,7 +63,9 @@ export class AuthController {
     @Request() req: ExpressRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = req.cookies[this.config.REFRESH_COOKIE_NAME] as string;
+    const refreshToken = req.cookies[
+      this.tokensConfig.REFRESH_COOKIE_NAME
+    ] as string;
 
     if (!refreshToken) {
       throw new UnauthorizedException('No refresh token found');
@@ -72,6 +74,6 @@ export class AuthController {
     const newAccessToken =
       await this.authService.refreshAccessToken(refreshToken);
 
-    res.cookie(this.config.ACCESS_COOKIE_NAME, newAccessToken);
+    res.cookie(this.tokensConfig.ACCESS_COOKIE_NAME, newAccessToken);
   }
 }
