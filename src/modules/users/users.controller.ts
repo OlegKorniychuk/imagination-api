@@ -7,12 +7,12 @@ import {
   SerializeOptions,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ImagesService } from 'src/images/images.service';
-import { ImageSearchOptionsDto } from 'src/images/dto/image-search-options.dto';
-import { S3Image, Image } from 'src/images/entities/image.entity';
-import { S3Service } from 'src/s3/s3.service';
+import { ImagesService } from 'src/modules/images/images.service';
+import { ImageSearchOptionsDto } from 'src/modules/images/dto/image-search-options.dto';
+import { S3Image, Image } from 'src/modules/images/entities/image.entity';
+import { S3Service } from 'src/modules/s3/s3.service';
 import { UserResponseDto } from './dto/user-response.dto';
-import { Public } from 'src/auth/public.decorator';
+import { Public } from 'src/modules/auth/public.decorator';
 
 @Controller('users')
 export class UsersController {

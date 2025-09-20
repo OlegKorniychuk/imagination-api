@@ -1,7 +1,7 @@
 import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { AccessTokenPayload } from 'src/auth/entities/access-token-payload';
+import { AccessTokenPayload } from 'src/modules/auth/entities/access-token-payload';
 import { Config } from 'src/config/index.config';
 import { Request } from 'express';
 

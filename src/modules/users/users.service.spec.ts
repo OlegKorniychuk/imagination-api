@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DRIZZLE } from 'src/modules/drizzle/drizzle.module';
 
 describe('UsersService', () => {
   let service: UsersService;

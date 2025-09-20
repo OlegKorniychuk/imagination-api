@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
-import { DrizzleModule } from 'src/drizzle/drizzle.module';
-import { ImagesModule } from 'src/images/images.module';
-import { S3Module } from 'src/s3/s3.module';
+import { DrizzleModule } from 'src/modules/drizzle/drizzle.module';
+import { ImagesModule } from 'src/modules/images/images.module';
+import { S3Module } from 'src/modules/s3/s3.module';
 import { MeController } from './me.controller';
 
 @Module({

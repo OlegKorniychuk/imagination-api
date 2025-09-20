@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
-import { ImagesService } from 'src/images/images.service';
-import { S3Service } from 'src/s3/s3.service';
+import { DRIZZLE } from 'src/modules/drizzle/drizzle.module';
+import { ImagesService } from 'src/modules/images/images.service';
+import { S3Service } from 'src/modules/s3/s3.service';
 
 describe('UsersController', () => {
   let controller: UsersController;

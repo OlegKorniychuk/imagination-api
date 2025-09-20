@@ -1,10 +1,10 @@
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
-import { DrizzleDB } from 'src/drizzle/types/drizzle';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DrizzleDB } from 'src/modules/drizzle/types/drizzle';
+import { DRIZZLE } from 'src/modules/drizzle/drizzle.module';
 import { Image } from './entities/image.entity';
-import { images } from 'src/drizzle/schema/images.schema';
+import { images } from 'src/modules/drizzle/schema/images.schema';
 import { eq, ilike, and, SQL, asc, desc, arrayOverlaps } from 'drizzle-orm';
 import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 

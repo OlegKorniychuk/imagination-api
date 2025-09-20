@@ -3,7 +3,7 @@ import { ImagesController } from './images.controller';
 import { ImagesService } from './images.service';
 // import { CreateImageDto } from './dto/create-image.dto';
 // import { UpdateImageDto } from './dto/update-image.dto';
-import { S3Service } from 'src/s3/s3.service';
+import { S3Service } from 'src/modules/s3/s3.service';
 import { Image, S3Image } from './entities/image.entity';
 import {
   // HttpException,

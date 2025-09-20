@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImagesService } from './images.service';
-import { DRIZZLE } from 'src/drizzle/drizzle.module';
+import { DRIZZLE } from 'src/modules/drizzle/drizzle.module';
 import { CreateImageDto } from './dto/create-image.dto';
 import { Image } from './entities/image.entity';
-import { images } from 'src/drizzle/schema/images.schema';
+import { images } from 'src/modules/drizzle/schema/images.schema';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
 

@@ -20,19 +20,19 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ImagesService } from 'src/images/images.service';
-import { S3Service } from 'src/s3/s3.service';
+import { ImagesService } from 'src/modules/images/images.service';
+import { S3Service } from 'src/modules/s3/s3.service';
 import { AuthenticatedRequest } from 'src/entitites/auth-request';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ImageSearchOptionsDto } from 'src/images/dto/image-search-options.dto';
-import { ImageResponseDto } from 'src/images/dto/image-response.dto';
-import { Image, S3Image } from 'src/images/entities/image.entity';
+import { ImageSearchOptionsDto } from 'src/modules/images/dto/image-search-options.dto';
+import { ImageResponseDto } from 'src/modules/images/dto/image-response.dto';
+import { Image, S3Image } from 'src/modules/images/entities/image.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { randomBytes } from 'crypto';
-import { CreateImageDto } from 'src/images/dto/create-image.dto';
-import { UpdateImageDto } from 'src/images/dto/update-image.dto';
+import { CreateImageDto } from 'src/modules/images/dto/create-image.dto';
+import { UpdateImageDto } from 'src/modules/images/dto/update-image.dto';
 
 @Controller('me')
 export class MeController {

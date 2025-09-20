@@ -8,10 +8,10 @@ import {
 } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
-import { S3Service } from 'src/s3/s3.service';
+import { S3Service } from 'src/modules/s3/s3.service';
 import { Image, S3Image } from './entities/image.entity';
 import { ImageResponseDto } from './dto/image-response.dto';
-import { Public } from 'src/auth/public.decorator';
+import { Public } from 'src/modules/auth/public.decorator';
 
 @Controller('images')
 export class ImagesController {

@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 import { LoginRequestBodyDto, LoginResponseDto } from './dto/login.dto';
 import { Public } from './public.decorator';
 import { LocalAuthGuard } from './strategies/local/local.guard';
@@ -18,7 +18,7 @@ import { Request } from '@nestjs/common';
 import { Response, Request as ExpressRequest } from 'express';
 import { Config } from 'src/config/index.config';
 import { AuthService } from './auth.service';
-import { UserResponseDto } from 'src/users/dto/user-response.dto';
+import { UserResponseDto } from 'src/modules/users/dto/user-response.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 
 @Controller('auth')
