@@ -46,7 +46,7 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: false });
   SwaggerModule.setup('api/docs', app, documentFactory);
 
-  await app.listen(rootConfig.app.PORT);
+  await app.listen(rootConfig.app.PORT, '0.0.0.0');
 }
 
 bootstrap().catch((err) => {
