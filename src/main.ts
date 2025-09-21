@@ -37,7 +37,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Imagination API')
-    .setDescription('API documentationi for Imagination image sharing app')
+    .setDescription('API documentationi for Imagination - an image sharing app')
     .setVersion('1.0')
     .addTag('imagination')
     .addBearerAuth()
