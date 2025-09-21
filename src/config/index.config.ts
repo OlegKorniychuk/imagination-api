@@ -1,24 +1,53 @@
-import { IsNumberString, IsString, Length, Matches } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNumberString,
+  IsString,
+  IsUrl,
+  Length,
+  Matches,
+  ValidateNested,
+} from 'class-validator';
 
-export class Config {
-  @IsString()
-  DATABASE_URL: string;
-
+export class AppConfig {
   @IsNumberString()
   PORT: string;
 
+  @Transform(({ value }): string[] =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsArray()
+  @IsUrl(
+    {
+      protocols: ['http', 'https'],
+      require_tld: false,
+      require_protocol: true,
+    },
+    { each: true },
+  )
+  ORIGIN: string[];
+}
+
+export class DbConfig {
   @IsString()
-  S3_BUCKET_NAME: string;
+  DATABASE_URL: string;
+}
+
+export class S3Config {
+  @IsString()
+  BUCKET_NAME: string;
 
   @IsString()
-  S3_BUCKET_REGION: string;
+  BUCKET_REGION: string;
 
   @IsString()
-  S3_BUCKET_KEY: string;
+  BUCKET_KEY: string;
 
   @IsString()
-  S3_BUCKET_SECRET: string;
+  BUCKET_SECRET: string;
+}
 
+export class TokensConfig {
   @IsString()
   @Length(32, 32)
   ACCESS_TOKEN_SECRET: string;
@@ -46,4 +75,22 @@ export class Config {
 
   @IsString()
   REFRESH_COOKIE_NAME: string;
+}
+
+export class RootConfig {
+  @Type(() => AppConfig)
+  @ValidateNested()
+  app: AppConfig;
+
+  @Type(() => DbConfig)
+  @ValidateNested()
+  db: DbConfig;
+
+  @Type(() => S3Config)
+  @ValidateNested()
+  s3: S3Config;
+
+  @Type(() => TokensConfig)
+  @ValidateNested()
+  tokens: TokensConfig;
 }
