@@ -24,10 +24,6 @@ jobs:
           script: |
             cd ~/imagination-api
 
-            mkdir -p certs
-
-            echo {{ $AWS_RDS_CA_CERT }} > ./certs/global-bundle.pem
-
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
             ./deploy.sh
