@@ -13,4 +13,4 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
 EXPOSE 3000
-CMD ["npm", "run", "start:prod"]
+CMD ["NODE_ENV=production", "node", "dist/src/main"]
