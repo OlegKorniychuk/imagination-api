@@ -8,6 +8,7 @@ export class MockConfig implements RootConfig {
 
   db = {
     DATABASE_URL: 'postgres://test',
+    CA_CERT_FILENAME: 'global.pem',
   };
 
   s3 = {

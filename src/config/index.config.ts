@@ -6,6 +6,7 @@ import {
   IsUrl,
   Length,
   Matches,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
@@ -31,6 +32,10 @@ export class AppConfig {
 export class DbConfig {
   @IsString()
   DATABASE_URL: string;
+
+  @ValidateIf(() => process.env.NODE_ENV === 'production')
+  @IsString()
+  CA_CERT_FILENAME: string;
 }
 
 export class S3Config {
