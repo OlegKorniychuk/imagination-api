@@ -31,6 +31,9 @@ export class AppConfig {
 export class DbConfig {
   @IsString()
   DATABASE_URL: string;
+
+  @IsString()
+  CA_CERT_FILENAME: string;
 }
 
 export class S3Config {
