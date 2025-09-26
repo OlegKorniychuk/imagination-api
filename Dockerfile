@@ -12,5 +12,7 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
+ENV NODE_ENV=production
+
 EXPOSE 3000
-CMD ["NODE_ENV=production", "node", "dist/src/main"]
+CMD ["node", "dist/src/main"]
