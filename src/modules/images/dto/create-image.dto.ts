@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class CreateImageDto {
   @ApiProperty()
@@ -16,4 +16,9 @@ export class CreateImageDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
 }
