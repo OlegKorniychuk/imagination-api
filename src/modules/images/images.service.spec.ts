@@ -79,8 +79,8 @@ describe('ImagesService', () => {
 
       expect(mockDrizzleDB.select).toHaveBeenCalled();
       expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
-      expect(result.length).toBe(2);
-      result.forEach((image) => {
+      expect(result.images.length).toBe(2);
+      result.images.forEach((image) => {
         expect(image).toEqual(mockImage);
       });
     });
