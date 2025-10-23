@@ -9,8 +9,11 @@ import {
 import { ImagesService } from './images.service';
 import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 import { S3Service } from 'src/modules/s3/s3.service';
-import { Image, S3Image } from './entities/image.entity';
-import { ImageResponseDto } from './dto/image-response.dto';
+import { S3Image } from './entities/image.entity';
+import {
+  ImageResponseDto,
+  PaginatedImagesResponseDto,
+} from './dto/image-response.dto';
 import { Public } from 'src/modules/auth/public.decorator';
 
 @Controller('images')
@@ -22,13 +25,13 @@ export class ImagesController {
 
   @Get()
   @Public()
-  @SerializeOptions({ type: ImageResponseDto })
+  @SerializeOptions({ type: PaginatedImagesResponseDto })
   async findMany(
     @Query() query: ImageSearchOptionsDto,
-  ): Promise<ImageResponseDto[]> {
-    const images: Image[] = await this.imagesService.findMany(query);
+  ): Promise<PaginatedImagesResponseDto> {
+    const imagesData = await this.imagesService.findMany(query);
     const imagesWithUrls: S3Image[] = await Promise.all(
-      images.map(async (image) => {
+      imagesData.images.map(async (image) => {
         const url: string = await this.s3Service.getImageUrl(
           image.uniqueName,
           3600,
@@ -38,7 +41,7 @@ export class ImagesController {
       }),
     );
 
-    return imagesWithUrls;
+    return { data: imagesWithUrls, nextPage: imagesData.nextPage };
   }
 
   @Get(':id')

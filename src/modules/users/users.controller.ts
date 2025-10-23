@@ -9,10 +9,11 @@ import {
 import { UsersService } from './users.service';
 import { ImagesService } from 'src/modules/images/images.service';
 import { ImageSearchOptionsDto } from 'src/modules/images/dto/image-search-options.dto';
-import { S3Image, Image } from 'src/modules/images/entities/image.entity';
+import { S3Image } from 'src/modules/images/entities/image.entity';
 import { S3Service } from 'src/modules/s3/s3.service';
 import { UserResponseDto } from './dto/user-response.dto';
 import { Public } from 'src/modules/auth/public.decorator';
+import { PaginatedImagesResponseDto } from '../images/dto/image-response.dto';
 
 @Controller('users')
 export class UsersController {
@@ -37,13 +38,14 @@ export class UsersController {
 
   @Get(':id/images')
   @Public()
+  @SerializeOptions({ type: PaginatedImagesResponseDto })
   async findUserImages(
     @Query() query: ImageSearchOptionsDto,
     @Param('id') id: string,
-  ): Promise<S3Image[]> {
-    const images: Image[] = await this.imagesService.findMany(query, id);
+  ): Promise<PaginatedImagesResponseDto> {
+    const imagesData = await this.imagesService.findMany(query, id);
     const imagesWithUrls: S3Image[] = await Promise.all(
-      images.map(async (image) => {
+      imagesData.images.map(async (image) => {
         const url: string = await this.s3Service.getImageUrl(
           image.uniqueName,
           3600,
@@ -53,7 +55,7 @@ export class UsersController {
       }),
     );
 
-    return imagesWithUrls;
+    return { data: imagesWithUrls, nextPage: imagesData.nextPage };
   }
 
   @Get(':id')

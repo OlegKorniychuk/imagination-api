@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { S3Image } from '../entities/image.entity';
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 
 export class ImageResponseDto implements S3Image {
   @ApiProperty()
@@ -32,4 +32,12 @@ export class ImageResponseDto implements S3Image {
 
   @ApiProperty()
   updatedAt: Date;
+}
+
+export class PaginatedImagesResponseDto {
+  @ApiProperty()
+  @Type(() => ImageResponseDto)
+  data: ImageResponseDto[];
+  @ApiProperty()
+  nextPage: number | null;
 }

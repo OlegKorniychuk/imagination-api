@@ -10,6 +10,7 @@ import {
   // HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
+import { PaginatedImagesResponseDto } from './dto/image-response.dto';
 
 class MockImagesService {
   create = jest.fn();
@@ -123,14 +124,14 @@ describe('ImagesController', () => {
       mockImagesService.findMany.mockResolvedValue(imagesArray);
       mockS3Service.getImageUrl.mockResolvedValue(mockSignedUrl);
 
-      const result = await controller.findMany({});
+      const result: PaginatedImagesResponseDto = await controller.findMany({});
 
       expect(mockImagesService.findMany).toHaveBeenCalledWith({});
       expect(mockS3Service.getImageUrl).toHaveBeenCalledTimes(
         imagesArray.length,
       );
-      expect(result[0]).toHaveProperty('url', mockSignedUrl);
-      expect(result.length).toBe(2);
+      expect(result.data[0]).toHaveProperty('url', mockSignedUrl);
+      expect(result.data.length).toBe(2);
     });
   });
 
