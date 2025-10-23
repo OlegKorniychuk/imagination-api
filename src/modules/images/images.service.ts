@@ -16,6 +16,8 @@ import {
   count,
 } from 'drizzle-orm';
 import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
+import { users } from '../drizzle/schema/users.schema';
+import { ImageDetails } from './entities/image-details.entity';
 
 @Injectable()
 export class ImagesService {
@@ -127,16 +129,22 @@ export class ImagesService {
   }
 
   // pass authorId to get user's private picture
-  async findOne(id: string, authorId?: string): Promise<Image | undefined> {
-    const [image] = await this.db
+  async findOne(
+    id: string,
+    authorId?: string,
+  ): Promise<ImageDetails | undefined> {
+    const [result] = await this.db
       .select()
       .from(images)
-      .where(eq(images.id, id));
+      .where(eq(images.id, id))
+      .innerJoin(users, eq(images.authorId, users.id));
+
+    const { images: image, users: author } = result;
 
     if (image && !image.isPublic && authorId !== image.authorId)
       throw new ForbiddenException();
 
-    return image;
+    return { author, ...image };
   }
 
   async update(

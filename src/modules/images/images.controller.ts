@@ -10,11 +10,9 @@ import { ImagesService } from './images.service';
 import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 import { S3Service } from 'src/modules/s3/s3.service';
 import { S3Image } from './entities/image.entity';
-import {
-  ImageResponseDto,
-  PaginatedImagesResponseDto,
-} from './dto/image-response.dto';
+import { PaginatedImagesResponseDto } from './dto/image-response.dto';
 import { Public } from 'src/modules/auth/public.decorator';
+import { ImageDetailsDto } from './dto/image-details.dto';
 
 @Controller('images')
 export class ImagesController {
@@ -46,8 +44,8 @@ export class ImagesController {
 
   @Get(':id')
   @Public()
-  @SerializeOptions({ type: ImageResponseDto })
-  async findOne(@Param('id') id: string): Promise<ImageResponseDto> {
+  @SerializeOptions({ type: ImageDetailsDto })
+  async findOne(@Param('id') id: string): Promise<ImageDetailsDto> {
     const image = await this.imagesService.findOne(id);
 
     if (!image) throw new NotFoundException();
