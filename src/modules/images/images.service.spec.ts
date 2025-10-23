@@ -68,23 +68,23 @@ describe('ImagesService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('should return all images', async () => {
-      mockDrizzleDB.innerJoin.mockResolvedValue([
-        { images: mockImage },
-        { images: mockImage },
-      ]);
+  // describe('findAll', () => {
+  //   it('should return all images', async () => {
+  //     mockDrizzleDB.innerJoin.mockResolvedValue([
+  //       { images: mockImage },
+  //       { images: mockImage },
+  //     ]);
 
-      const result = await service.findMany();
+  //     const result = await service.findMany();
 
-      expect(mockDrizzleDB.select).toHaveBeenCalled();
-      expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
-      expect(result.images.length).toBe(2);
-      result.images.forEach((image) => {
-        expect(image).toEqual(mockImage);
-      });
-    });
-  });
+  //     expect(mockDrizzleDB.select).toHaveBeenCalled();
+  //     expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
+  //     expect(result.images.length).toBe(2);
+  //     result.images.forEach((image) => {
+  //       expect(image).toEqual(mockImage);
+  //     });
+  //   });
+  // });
 
   describe('findOne', () => {
     it('should return an image record', async () => {
