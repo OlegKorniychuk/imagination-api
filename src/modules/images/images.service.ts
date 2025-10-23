@@ -5,7 +5,16 @@ import { DrizzleDB } from 'src/modules/drizzle/types/drizzle';
 import { DRIZZLE } from 'src/modules/drizzle/drizzle.module';
 import { Image } from './entities/image.entity';
 import { images } from 'src/modules/drizzle/schema/images.schema';
-import { eq, ilike, and, SQL, asc, desc, arrayOverlaps } from 'drizzle-orm';
+import {
+  eq,
+  ilike,
+  and,
+  SQL,
+  asc,
+  desc,
+  arrayOverlaps,
+  count,
+} from 'drizzle-orm';
 import { ImageSearchOptionsDto } from './dto/image-search-options.dto';
 
 @Injectable()
@@ -29,35 +38,40 @@ export class ImagesService {
     options: ImageSearchOptionsDto = {},
     // pass this for user to get his own images, including private
     authorId?: string,
-  ): Promise<Image[]> {
+  ): Promise<{ images: Image[]; nextPage: number | null }> {
     const { filter, sort, paginate } = options;
 
-    // Ids subquerry
-    let idSubquery = this.db.select({ id: images.id }).from(images).$dynamic();
+    const page = paginate?.page || 1;
+    const pageSize = paginate?.pageSize || 10;
+
+    const whereConditions: SQL<unknown>[] = [];
 
     // Filters
     if (filter) {
-      const conditions: SQL<unknown>[] = [];
-
       if (filter.title) {
-        conditions.push(ilike(images.title, `%${filter.title}%`));
+        whereConditions.push(ilike(images.title, `%${filter.title}%`));
       }
 
       // Looks for images that have ANY of provided tags
       if (filter.tags && filter.tags.length > 0) {
-        conditions.push(arrayOverlaps(images.tags, filter.tags));
-      }
-
-      if (conditions.length > 0) {
-        idSubquery = idSubquery.where(and(...conditions));
+        whereConditions.push(arrayOverlaps(images.tags, filter.tags));
       }
     }
 
     if (authorId) {
-      idSubquery = idSubquery.where(eq(images.authorId, authorId));
+      whereConditions.push(eq(images.authorId, authorId));
     } else {
-      idSubquery = idSubquery.where(eq(images.isPublic, true));
+      whereConditions.push(eq(images.isPublic, true));
     }
+
+    const whereClause = and(...whereConditions);
+
+    // Ids subquerry
+    let idSubquery = this.db
+      .select({ id: images.id })
+      .from(images)
+      .where(whereClause)
+      .$dynamic();
 
     // Sorting
 
@@ -74,9 +88,7 @@ export class ImagesService {
     }
 
     if (paginate) {
-      idSubquery = idSubquery
-        .limit(paginate.pageSize)
-        .offset((paginate.page - 1) * paginate.pageSize);
+      idSubquery = idSubquery.limit(pageSize).offset((page - 1) * pageSize);
     }
 
     // All this weird shit is needed to implement deferred join - a pagination optimization technique
@@ -99,7 +111,19 @@ export class ImagesService {
       }
     }
 
-    return await finalQuery.then((rows) => rows.map((row) => row.images));
+    const plainImages: Image[] = await finalQuery.then((rows) =>
+      rows.map((row) => row.images),
+    );
+    const countResult = await this.db
+      .select({ count: count(images.id) })
+      .from(images)
+      .where(whereClause);
+
+    const totalItems = countResult[0].count;
+    const hasNextPage = page * pageSize < totalItems;
+    const nextPage = hasNextPage ? page + 1 : null;
+
+    return { images: plainImages, nextPage };
   }
 
   // pass authorId to get user's private picture
@@ -150,5 +174,11 @@ export class ImagesService {
       .returning();
 
     return deletedImage;
+  }
+
+  async count(): Promise<number> {
+    const [result] = await this.db.select({ count: count() }).from(images);
+
+    return result.count;
   }
 }

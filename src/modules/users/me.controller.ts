@@ -26,7 +26,10 @@ import { AuthenticatedRequest } from 'src/entitites/auth-request';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ImageSearchOptionsDto } from 'src/modules/images/dto/image-search-options.dto';
-import { ImageResponseDto } from 'src/modules/images/dto/image-response.dto';
+import {
+  ImageResponseDto,
+  PaginatedImagesResponseDto,
+} from 'src/modules/images/dto/image-response.dto';
 import { Image, S3Image } from 'src/modules/images/entities/image.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -68,17 +71,17 @@ export class MeController {
   }
 
   @Get('images')
-  @SerializeOptions({ type: ImageResponseDto })
+  @SerializeOptions({ type: PaginatedImagesResponseDto })
   async readImages(
     @Request() request: AuthenticatedRequest,
     @Query() query: ImageSearchOptionsDto,
-  ): Promise<ImageResponseDto[]> {
-    const images: Image[] = await this.imagesService.findMany(
+  ): Promise<PaginatedImagesResponseDto> {
+    const imagesData = await this.imagesService.findMany(
       query,
       request.user.id,
     );
     const imagesWithUrls: S3Image[] = await Promise.all(
-      images.map(async (image) => {
+      imagesData.images.map(async (image) => {
         const url: string = await this.s3Service.getImageUrl(
           image.uniqueName,
           3600,
@@ -88,7 +91,7 @@ export class MeController {
       }),
     );
 
-    return imagesWithUrls;
+    return { data: imagesWithUrls, nextPage: imagesData.nextPage };
   }
 
   @Post('images')
