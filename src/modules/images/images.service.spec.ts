@@ -6,6 +6,8 @@ import { Image } from './entities/image.entity';
 import { images } from 'src/modules/drizzle/schema/images.schema';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { MockDrizzleDB } from 'test/mocks/drizzle.mock';
+import { ImageDetails } from './entities/image-details.entity';
+import { User } from '../users/entities/user.entity';
 
 const mockImage: Image = {
   id: 'a-valid-uuid',
@@ -17,6 +19,20 @@ const mockImage: Image = {
   isPublic: true,
   createdAt: new Date(),
   updatedAt: new Date(),
+};
+
+const mockUser: User = {
+  id: 'authorId',
+  username: 'username',
+  email: 'email',
+  password: 'string',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
+const mockImageDetails: ImageDetails = {
+  ...mockImage,
+  author: mockUser,
 };
 
 describe('ImagesService', () => {
@@ -88,14 +104,16 @@ describe('ImagesService', () => {
 
   describe('findOne', () => {
     it('should return an image record', async () => {
-      mockDrizzleDB.where.mockResolvedValue([mockImage]);
+      mockDrizzleDB.innerJoin.mockResolvedValue([
+        { images: mockImage, users: mockUser },
+      ]);
 
       const result = await service.findOne(mockImage.id);
 
       expect(mockDrizzleDB.select).toHaveBeenCalled();
       expect(mockDrizzleDB.from).toHaveBeenCalledWith(images);
       expect(mockDrizzleDB.where).toHaveBeenCalledWith(expect.anything());
-      expect(result).toEqual(mockImage);
+      expect(result).toEqual(mockImageDetails);
     });
   });
 
